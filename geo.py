@@ -30,17 +30,15 @@ def cel(ftp_adress):
     ftp.quit()
     return cel_pres
 
-def platform(gpls):
+def platform(gpl):
     """
     Возвращает название платформы
     """
     platforms = []
-    gpl_list = str(gpls).split(sep=';')
-    for gpl in gpl_list:
-        gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
-        handle = Entrez.esummary(db="gds", id=gpl_id)
-        summary = Entrez.read(handle)
-        platforms.append(summary[0]['title'])
+    gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
+    handle = Entrez.esummary(db="gds", id=gpl_id)
+    summary = Entrez.read(handle)
+    platforms.append(summary[0]['title'])
     return platforms
 
 def retrieve_record(query):
@@ -48,15 +46,17 @@ def retrieve_record(query):
     Возвращает выбранные параметры для всех записией по данному запросу
     """
     handle = Entrez.esearch(db='gds', retmax=200, term='("bevacizumab"[All Fields] OR Bevacizumab[All Fields]) AND ("expression profiling by array"[DataSet Type] OR "expression profiling by high throughput sequencing"[DataSet Type]) AND "gse"[Filter]')
-
+    #((expression profiling by array[DataSet Type])OR(expression profiling by high throughput sequencing[DataSet Type]))AND(gse[Filter])AND((ThT[Description])OR(ThT[Title]))
     record = Entrez.read(handle)
     for geo_id in record['IdList']:
             handle = Entrez.esummary(db='gds', id=geo_id)
             summary = Entrez.read(handle)
             cel_presence = cel(summary[0]['FTPLink'])
 
-            print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, summary[0]['GPL'], ','.join(platform(summary[0]['GPL']))))
-            print()
+            for c in str(summary[0]['GPL']).split(sep = ';'):
+                #print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
+                print('%s;%s;%s;%s;GPL%s;%s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
+                #print()
 
     return None
 
