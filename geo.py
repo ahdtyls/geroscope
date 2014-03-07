@@ -1,7 +1,6 @@
 __author__ = 'maximk'
 
 from Bio import Entrez
-import os
 from ftplib import FTP
 
 Entrez.email = 'kuleshov.max.v@gmail.com'
@@ -10,18 +9,39 @@ def cel(ftp_adress):
     """
     Проверяет наличие CEL-файлов
     """
-    ftp = FTP(ftp_adress)
+    cel_pres = '-'
+    ftp = FTP('ftp.ncbi.nlm.nih.gov')
     ftp.login()
+    ftp.cwd(ftp_adress[26:])
+    # Вообще-то nlst нужно заменить на mlsd
     files_list = ftp.nlst()
-    return None
+    if 'suppl' in files_list:
+        ftp.cwd('suppl')
+    files_list = ftp.nlst()
+    if 'filelist.txt' in files_list:
+        ftp.retrbinary('RETR filelist.txt', open('filelist.txt', 'wb').write)
 
-def platform(gpl):
+    filelist = open('/home/maximk/PycharmProjects/heroscope/filelist.txt', 'r').read()
+    for line in filelist.split(sep='\n'):
+        if 'CEL' in line:
+            cel_pres = '+'
+            ftp.quit()
+            return cel_pres
+    ftp.quit()
+    return cel_pres
+
+def platform(gpls):
     """
     Возвращает название платформы
     """
-    handle = Entrez.esummary(db="gds", id=''.join(['10000', str(gpl)]))
-    summary = Entrez.read(handle)
-    return summary[0]['title']
+    platforms = []
+    gpl_list = str(gpls).split(sep=';')
+    for gpl in gpl_list:
+        gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
+        handle = Entrez.esummary(db="gds", id=gpl_id)
+        summary = Entrez.read(handle)
+        platforms.append(summary[0]['title'])
+    return platforms
 
 def retrieve_record(query):
     """
@@ -33,9 +53,9 @@ def retrieve_record(query):
     for geo_id in record['IdList']:
             handle = Entrez.esummary(db='gds', id=geo_id)
             summary = Entrez.read(handle)
-            #cel_presence = cel(summary[0]['FTPLink'])
+            cel_presence = cel(summary[0]['FTPLink'])
 
-            print('GEO Series ID: %s\nName: %s\nSamples: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), summary[0]['GPL'], platform(summary[0]['GPL'])))
+            print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, summary[0]['GPL'], ','.join(platform(summary[0]['GPL']))))
             print()
 
     return None
