@@ -4,8 +4,6 @@ from Bio import Entrez
 import os
 from ftplib import FTP
 
-os.environ["http_proxy"] = "192.3.25.99:3127"
-
 Entrez.email = 'kuleshov.max.v@gmail.com'
 
 def cel(ftp_adress):
@@ -21,9 +19,9 @@ def platform(gpl):
     """
     Возвращает название платформы
     """
-    handle = Entrez.esearch(db="gds", term= ''.join([gpl, '[GEO Accession]']))
+    handle = Entrez.esummary(db="gds", id=''.join(['10000', str(gpl)]))
     summary = Entrez.read(handle)
-    return None
+    return summary[0]['title']
 
 def retrieve_record(query):
     """
@@ -36,8 +34,8 @@ def retrieve_record(query):
             handle = Entrez.esummary(db='gds', id=geo_id)
             summary = Entrez.read(handle)
             #cel_presence = cel(summary[0]['FTPLink'])
-            platform(summary[0]['GPL'])
-            print('GEO Series ID: %s\nName: %s\n%s samples\nGEO Platform ID: GPL%s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), summary[0]['GPL']))
+
+            print('GEO Series ID: %s\nName: %s\nSamples: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), summary[0]['GPL'], platform(summary[0]['GPL'])))
             print()
 
     return None
