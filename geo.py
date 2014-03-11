@@ -1,7 +1,7 @@
 __author__ = 'maximk'
 
 from Bio import Entrez
-from ftplib import FTP
+import ftplib
 
 Entrez.email = 'kuleshov.max.v@gmail.com'
 
@@ -10,23 +10,27 @@ def cel(ftp_adress):
     Проверяет наличие CEL-файлов
     """
     cel_pres = '-'
-    ftp = FTP('ftp.ncbi.nlm.nih.gov')
-    ftp.login()
-    ftp.cwd(ftp_adress[26:])
-    files_list = ftp.mlsd()
-    if 'suppl' in files_list:
-        ftp.cwd('suppl')
-    files_list = ftp.mlsd()
-    if 'filelist.txt' in files_list:
-        ftp.retrbinary('RETR filelist.txt', open('filelist.txt', 'wb').write)
+    try:
+        ftp = ftplib.FTP('ftp.ncbi.nlm.nih.gov')
+        ftp.login()
+        ftp.cwd(ftp_adress[26:])
+        files_list = ftp.mlsd()
+        if 'suppl' in files_list:
+            ftp.cwd('suppl')
+        files_list = ftp.mlsd()
+        if 'filelist.txt' in files_list:
+            ftp.retrbinary('RETR filelist.txt', open('filelist.txt', 'wb').write)
 
-    filelist = open('/home/maximk/PycharmProjects/heroscope/filelist.txt', 'r').read()
-    for line in filelist.split(sep='\n'):
-        if 'CEL' in line:
-            cel_pres = '+'
-            ftp.quit()
-            return cel_pres
-    ftp.quit()
+        filelist = open('/home/maximk/PycharmProjects/heroscope/filelist.txt', 'r').read()
+        for line in filelist.split(sep='\n'):
+            if 'CEL' in line:
+                cel_pres = '+'
+                ftp.quit()
+                return cel_pres
+        ftp.quit()
+    except ftplib.all_errors as e:
+        print('%s' % e)
+        cel_pres = '0'
     return cel_pres
 
 def platform(gpl):
@@ -45,7 +49,7 @@ def check_presence(drug_name, title, summary):
     Проверяет, на самом ли деле в названии или описании эксперимента говорится о заданном лекарстве
     """
     check = False
-    if (drug_name in title)and(drug_name in summary):
+    if (drug_name in title)or(drug_name in summary):
         check = True
     return check
 
@@ -60,14 +64,14 @@ def retrieve_record(query):
     for geo_id in record['IdList']:
             handle = Entrez.esummary(db='gds', id=geo_id)
             summary = Entrez.read(handle)
-            if check_presence(drug_name, summary[0]['title'], summary[0]['summary']):
-                cel_presence = cel(summary[0]['FTPLink'])
-                for c in str(summary[0]['GPL']).split(sep = ';'):
-                    #print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
-                    print('%s;%s;%s;%s;GPL%s;%s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
-                    #print()
+            #if check_presence(drug_name, summary[0]['title'], summary[0]['summary']):
+            cel_presence = cel(summary[0]['FTPLink'])
+            for c in str(summary[0]['GPL']).split(sep = ';'):
+                #print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
+                print('%s;%s;%s;%s;GPL%s;%s' % (summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
 
     return None
 
-retrieve_record('')
+#retrieve_record('')
 #cel('ftp.debian.org')
+
