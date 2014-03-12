@@ -45,14 +45,14 @@ def platform(gpl):
     platforms.append(summary[0]['title'])
     return platforms
 
-def check_xml(drug_name, id):
+def check_design(drug_name, id):
     """
     Проверяет, есть ли название лекарства в overall design
     """
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % id
     geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
     overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
-    if drug_name in overall_design:
+    if (drug_name in overall_design)or(drug_name.lower() in overall_design):
        return True
     else:
         return False
@@ -61,12 +61,11 @@ def check_presence(drug_name, summary):
     """
     Проверяет, на самом ли деле в названии или описании эксперимента говорится о заданном лекарстве
     """
-    check = False
-    if (drug_name in summary[0]['title'])or(drug_name in summary[0]['summary']):
-        check = True
+    if (drug_name in summary[0]['title'])or(drug_name in summary[0]['summary'])\
+            or ((drug_name.lower() in summary[0]['title'])or(drug_name.lower() in summary[0]['summary'])):
+        return True
     else:
-        check = check_xml(drug_name, summary[0]['GSE'])
-    return check
+        return check_design(drug_name, summary[0]['GSE'])
 
 def retrieve_record(drug_name):
     """
@@ -82,7 +81,6 @@ def retrieve_record(drug_name):
             if check_presence(drug_name, summary):
                 cel_presence = cel(summary[0]['FTPLink'])
                 for c in str(summary[0]['GPL']).split(sep = ';'):
-                    #print('GEO Series ID: %s\nName: %s\nSamples: %s\nCEL files: %s\nGEO Platform ID: GPL%s\nPlatform: %s' % (summary[0]['Accession'], summary[0]['title'], len(summary[0]['Samples']), cel_presence, c, ','.join(platform(c))))
                     print('%s;%s;%s;%s;GPL%s;%s' % (summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
 
     return None
