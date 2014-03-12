@@ -72,7 +72,7 @@ def retrieve_record(drug_name, alias):
     Возвращает выбранные параметры для всех записией по данному запросу
     """
     pattern = '((expression profiling by array[DataSet Type])OR(expression profiling by high throughput sequencing[DataSet Type]))AND(gse[Filter])AND((%s[Description])OR(%s[Title]))AND(homo sapiens[Organism])' % (alias, alias)
-    handle = Entrez.esearch(db='gds', retmax=200, term=pattern)
+    handle = Entrez.esearch(db='gds', retmax=500, term=pattern)
     record = Entrez.read(handle)
     for geo_id in record['IdList']:
             handle = Entrez.esummary(db='gds', id=geo_id)

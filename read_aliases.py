@@ -17,15 +17,5 @@ def makedic(file):
                 al_dict[name[0]][al] = dict()
     return al_dict
 
-path = '/home/maximk/Work/Heroscope/geroprotective_drugs.txt'
+path = ''
 geroprot = open(path, 'r').read().split(sep='\n')
-
-for line in geroprot:
-    name = line.strip().split(sep='\t')
-    names = [name[0]]
-    if len(name) > 1:
-        names += name[1].split(sep=';')
-    for alias in names:
-        retrieve_record(names[0], alias)
-
-
