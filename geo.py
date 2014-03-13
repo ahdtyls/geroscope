@@ -75,7 +75,6 @@ def retrieve_record(gero_dict):
     """
     Возвращает выбранные параметры для всех записией по данному запросу
     """
-    file = open('/home/maximk/Work/geroscope/gero.txt', 'a')
     gero_dict_copy = deepcopy(gero_dict)
     for drug in gero_dict.keys():
         for alias in gero_dict[drug].keys():
@@ -87,8 +86,10 @@ def retrieve_record(gero_dict):
                         cel_presence = cel(summary[0]['FTPLink'])
                         for c in str(summary[0]['GPL']).split(sep = ';'):
                             print('%s;%s;%s;%s;%s;%s;GPL%s;%s' % (drug, alias, summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
+                            file = open('/home/maximk/Work/geroscope/gero.txt', 'a')
                             file.write('%s;%s;%s;%s;%s;%s;GPL%s;%s\n' % (drug, alias, summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
-        gero_dict_copy[drug][alias].pop(geo_id)
+                            file.close()
+                            gero_dict_copy[drug][alias].pop(geo_id)
         with open('/home/maximk/Work/geroscope/gero_dict_unprocess.pickle', 'wb') as f:
             pickle.dump(gero_dict, f)
 
