@@ -63,12 +63,15 @@ def set_id_list(geroprot):
 path = '/home/maximk/Work/geroscope/drugs.txt'
 geroprot = open(path, 'r').read().split(sep='\n')
 
-if os.path.isfile('/home/maximk/Work/geroscope/gero_dict.pickle'):
-    with open('gero_dict.pickle', 'rb') as f:
+if os.path.isfile('/home/maximk/Work/geroscope/gero_dict_unprocess.pickle'):
+    with open('/home/maximk/Work/geroscope/gero_dict_unprocess.pickle', 'rb') as f:
+        gero_dict = pickle.load(f)
+elif os.path.isfile('/home/maximk/Work/geroscope/gero_dict.pickle'):
+    with open('/home/maximk/Work/geroscope/gero_dict.pickle', 'rb') as f:
         gero_dict = pickle.load(f)
 else:
     gero_dict = set_id_list(makedic(geroprot))
-    with open('gero_dict.pickle', 'wb') as f:
+    with open('/home/maximk/Work/geroscope/gero_dict.pickle', 'wb') as f:
         pickle.dump(gero_dict, f)
 
 retrieve_record(gero_dict)
