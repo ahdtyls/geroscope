@@ -1,6 +1,9 @@
 __author__ = 'maximk'
 
+from copy import deepcopy
+from Bio import Entrez
 from geo import retrieve_record
+Entrez.email = 'kuleshov.max.v@gmail.com'
 
 def makedic(file):
     """
@@ -17,5 +20,45 @@ def makedic(file):
                 al_dict[name[0]][al] = dict()
     return al_dict
 
-path = ''
+def set_id_list(geroprot):
+    """
+    Для каждого алиаса устанавливает список id в базе GEO
+    """
+    for drug in geroprot.keys():
+        for alias in geroprot[drug].keys():
+            pattern = '((expression profiling by array[DataSet Type])OR(expression profiling by high throughput sequencing[DataSet Type]))AND (gse[Filter])AND((%s[Description])OR(%s[Title]))AND(homo sapiens[Organism])' % (alias, alias)
+            handle = Entrez.esearch(db='gds', retmax=500, term=pattern)
+            record = Entrez.read(handle)
+            geroprot[drug][alias] = record['IdList']
+
+    # Удаление пустых алиасов
+    geroprot_copy = deepcopy(geroprot)
+    for drug in geroprot.keys():
+        for alias in geroprot[drug].keys():
+            if(drug != alias)and(not(geroprot[drug][alias])):
+                geroprot_copy[drug].pop(alias)
+    geroprot = geroprot_copy
+
+    # Удаление дублирующихся id
+    for drug in geroprot.keys():
+        id_set = set()
+        for alias in geroprot[drug].keys():
+            diff_alias = id_set.intersection(set(geroprot[drug][alias]))
+            if diff_alias:
+                for id_drug in diff_alias:
+                    geroprot[drug][alias].remove(id_drug)
+
+            diff_drug = set(geroprot[drug][drug]).intersection(set(geroprot[drug][alias]))
+            if(alias!=drug):
+                id_set = id_set.union(set(geroprot[drug][alias]))
+                if(diff_drug):
+                    for id_drug in diff_drug:
+                        geroprot[drug][drug].remove(id_drug)
+
+    return geroprot_copy
+
+path = '/home/maximk/Work/Heroscope/etha.txt'
 geroprot = open(path, 'r').read().split(sep='\n')
+gero_dict = set_id_list(makedic(geroprot))
+
+retrieve_record(gero_dict)

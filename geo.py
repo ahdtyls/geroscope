@@ -67,19 +67,19 @@ def check_presence(drug_name, summary):
     else:
         return check_design(drug_name, summary[0]['GSE'])
 
-def retrieve_record(drug_name, alias):
+def retrieve_record(gero_dict):
     """
     Возвращает выбранные параметры для всех записией по данному запросу
     """
-    pattern = '((expression profiling by array[DataSet Type])OR(expression profiling by high throughput sequencing[DataSet Type]))AND(gse[Filter])AND((%s[Description])OR(%s[Title]))AND(homo sapiens[Organism])' % (alias, alias)
-    handle = Entrez.esearch(db='gds', retmax=500, term=pattern)
-    record = Entrez.read(handle)
-    for geo_id in record['IdList']:
-            handle = Entrez.esummary(db='gds', id=geo_id)
-            summary = Entrez.read(handle)
-            if check_presence(alias, summary):
-                cel_presence = cel(summary[0]['FTPLink'])
-                for c in str(summary[0]['GPL']).split(sep = ';'):
-                    print('%s;%s;%s;%s;%s;%s;GPL%s;%s' % (drug_name, alias, summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
+    for drug in gero_dict.keys():
+        for alias in gero_dict[drug].keys():
+            if gero_dict[drug][alias]:
+                for geo_id in gero_dict[drug][alias]:
+                    handle = Entrez.esummary(db='gds', id=geo_id)
+                    summary = Entrez.read(handle)
+                    if check_presence(alias, summary):
+                        cel_presence = cel(summary[0]['FTPLink'])
+                        for c in str(summary[0]['GPL']).split(sep = ';'):
+                            print('%s;%s;%s;%s;%s;%s;GPL%s;%s' % (drug, alias, summary[0]['Accession'], summary[0]['title'], summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
     return None
 
