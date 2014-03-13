@@ -1,5 +1,8 @@
 __author__ = 'maximk'
 
+import pickle
+import os.path
+
 from copy import deepcopy
 from Bio import Entrez
 from geo import retrieve_record
@@ -57,8 +60,15 @@ def set_id_list(geroprot):
 
     return geroprot_copy
 
-path = '/home/maximk/Work/Heroscope/etha.txt'
+path = '/home/maximk/Work/geroscope/drugs.txt'
 geroprot = open(path, 'r').read().split(sep='\n')
-gero_dict = set_id_list(makedic(geroprot))
+
+if os.path.isfile('/home/maximk/Work/geroscope/gero_dict.pickle'):
+    with open('gero_dict.pickle', 'rb') as f:
+        gero_dict = pickle.load(f)
+else:
+    gero_dict = set_id_list(makedic(geroprot))
+    with open('gero_dict.pickle', 'wb') as f:
+        pickle.dump(gero_dict, f)
 
 retrieve_record(gero_dict)
