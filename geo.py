@@ -38,15 +38,16 @@ def cel(ftp_adress):
         cel_pres = '0'
     return cel_pres
 
-def platform(gpl):
+def platform(gpls):
     """
     Возвращает название платформы
     """
     platforms = []
-    gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
-    handle = Entrez.esummary(db="gds", id=gpl_id)
-    summary = Entrez.read(handle)
-    platforms.append(summary[0]['title'])
+    for gpl in gpls.split(sep=';'):
+        gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
+        handle = Entrez.esummary(db="gds", id=gpl_id)
+        summary = Entrez.read(handle)
+        platforms.append(summary[0]['title'])
     return platforms
 
 def check_design(drug_name, id):
