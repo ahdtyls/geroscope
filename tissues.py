@@ -64,9 +64,9 @@ def get_paper(pmids):
 
     for record in records:
         authors = record.get("AU", "?")
-        if len(authors)>2:
+        if len(authors) > 2:
             authors = '%s, %s et al.' % (authors[0], authors[1])
-        papers.append('%s, %s et al, %s' % (record.get("TI", "?"), authors, record.get("SO", "?")))
+        papers.append('%s, %s, %s' % (record.get("TI", "?"), authors, record.get("SO", "?")))
     return '\n'.join(papers)
 
 def get_summary(id):
@@ -100,8 +100,8 @@ for id in id_list:
     #  Title, Tissue, Cell, GSE, DataSet type, Samples, GEO Platform ID, Array type, Papers
     with open('/home/maximk/Work/geroscope/tissues/tissues.txt', 'a') as file:
         file.write('%s;%s;%s;GSE%s;%s;%s;%s;%s;%s\n'
-              % (record[0]['title'], ', '.join(ts[0]),','.join(ts[1]), record[0]['GSE'], ', '.join(record[0]['gdsType']),
-                 record[0]['n_samples'], record[0]['GPL'], ', '.join(platform(record[0]['GPL'])), paper))
+              % (record[0]['title'], ', '.join(ts[0]),','.join(ts[1]), record[0]['GSE'], ', '.join(record[0]['gdsType'].split(sep=';')),
+                 record[0]['n_samples'], ', '.join('GPL'+ id for id in record[0]['GPL'].split(sep=';')), ', '.join(platform(record[0]['GPL'])), paper))
     id_list_copy.remove(id)
     print(len(id_list_copy))
     with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'wb') as f:
