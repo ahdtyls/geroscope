@@ -1,13 +1,13 @@
 __author__ = 'maximk'
 
-#  Tissue, GSE, samples, array type, paper, dataset type
-
 import urllib
 import pickle
+import os.path
 import re
 
-from Bio import  Entrez
+from Bio import Entrez, Medline
 from geo import platform
+from copy import deepcopy
 
 def get_id_list():
     """
@@ -54,11 +54,16 @@ def retrieve_record(id):
     handle = Entrez.esummary(db='gds', id=id)
     return Entrez.read(handle)
 
-def get_paper(pmid):
+def get_paper(pmids):
     """
     Возвращает название статьи и список авторов
     """
-    return None
+    papers = []
+    handle = Entrez.efetch(db="pubmed", id=[str(id) for id in pmids], rettype="medline", retmode="text")
+    records = Medline.parse(handle)
+    for record in records:
+        papers.append('%s, %s, %s' % (record.get("TI", "?"), record.get("AU", "?"), record.get("SO", "?")))
+    return '\n'.join(papers)
 
 def get_summary(id):
     """
@@ -71,8 +76,27 @@ def get_summary(id):
     title = ' '.join(line for line in geo_xml if '!Series_title' in line)
     return ' '.join([title, summary, overall_design])
 
-id_list = get_id_list()
+if os.path.isfile('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle'):
+    with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'rb') as f:
+        id_list = pickle.load(f)
+elif os.path.isfile('/home/maximk/Work/geroscope/tissues/id_list.pickle'):
+    with open('/home/maximk/Work/geroscope/tissues/id_list.pickle', 'rb') as f:
+        id_list = pickle.load(f)
+else:
+    id_list = get_id_list()
+    with open('/home/maximk/Work/geroscope/tissues/id_list.pickle', 'wb') as f:
+        pickle.dump(id_list, f)
+
+id_list_copy = deepcopy(id_list)
+
 for id in id_list:
     record = retrieve_record(id)
+    paper = get_paper(record[0]['PubMedIds'])
     ts = get_tissue(get_summary(record[0]['GSE']))
-    print('%s;%s;GSE%s'%(', '.join(ts[0]),','.join(ts[1]),record[0]['GSE'], record[0]['n_samples'], record[0]['GPL'], ', '.join(platform(record[0]['GPL']))))
+    #  Title, Tissue, Cell, GSE, DataSet type, Samples, GEO Platform ID, Array type, Papers
+    print('%s;%s;%s;GSE%s;%s;%s;%s;%s;%s'
+          % (record[0]['title'], ', '.join(ts[0]),','.join(ts[1]), record[0]['GSE'], record[0]['gdsType'],
+             record[0]['n_samples'], record[0]['GPL'], ', '.join(platform(record[0]['GPL'])), paper))
+    id_list_copy.remove(id)
+    with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'wb') as f:
+        pickle.dump(id_list_copy, f)
