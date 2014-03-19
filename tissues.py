@@ -61,8 +61,12 @@ def get_paper(pmids):
     papers = []
     handle = Entrez.efetch(db="pubmed", id=[str(id) for id in pmids], rettype="medline", retmode="text")
     records = Medline.parse(handle)
+
     for record in records:
-        papers.append('%s, %s, %s' % (record.get("TI", "?"), record.get("AU", "?"), record.get("SO", "?")))
+        authors = record.get("AU", "?")
+        if len(authors)>2:
+            authors = '%s, %s et al.' % (authors[0], authors[1])
+        papers.append('%s, %s et al, %s' % (record.get("TI", "?"), authors, record.get("SO", "?")))
     return '\n'.join(papers)
 
 def get_summary(id):
@@ -94,9 +98,11 @@ for id in id_list:
     paper = get_paper(record[0]['PubMedIds'])
     ts = get_tissue(get_summary(record[0]['GSE']))
     #  Title, Tissue, Cell, GSE, DataSet type, Samples, GEO Platform ID, Array type, Papers
-    print('%s;%s;%s;GSE%s;%s;%s;%s;%s;%s'
-          % (record[0]['title'], ', '.join(ts[0]),','.join(ts[1]), record[0]['GSE'], record[0]['gdsType'],
-             record[0]['n_samples'], record[0]['GPL'], ', '.join(platform(record[0]['GPL'])), paper))
+    with open('/home/maximk/Work/geroscope/tissues/tissues.txt', 'a') as file:
+        file.write('%s;%s;%s;GSE%s;%s;%s;%s;%s;%s\n'
+              % (record[0]['title'], ', '.join(ts[0]),','.join(ts[1]), record[0]['GSE'], ', '.join(record[0]['gdsType']),
+                 record[0]['n_samples'], record[0]['GPL'], ', '.join(platform(record[0]['GPL'])), paper))
     id_list_copy.remove(id)
+    print(len(id_list_copy))
     with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'wb') as f:
         pickle.dump(id_list_copy, f)
