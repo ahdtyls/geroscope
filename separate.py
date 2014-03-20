@@ -3,9 +3,9 @@ __author__ = 'maximk'
 path = ''
 
 gero = open('/home/maximk/Work/geroscope/done/gero.txt', 'r').read().split(sep='\n')
-affy = open('/home/maximk/Work/geroscope/affy.txt','w')
+affy = open('/home/maximk/Work/geroscope/affy.txt', 'w')
 a = []
-non_affy = open('/home/maximk/Work/geroscope/non_affy.txt','w')
+non_affy = open('/home/maximk/Work/geroscope/non_affy.txt', 'w')
 na = []
 
 for line in gero:
