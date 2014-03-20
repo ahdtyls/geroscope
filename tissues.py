@@ -4,10 +4,10 @@ import urllib
 import pickle
 import os.path
 import re
-
 from Bio import Entrez, Medline
-from geo import platform
 from copy import deepcopy
+
+from geo import platform
 
 
 def get_id_list():
@@ -43,10 +43,10 @@ def get_tissue(summary):
     words = re.split('\W+', summary)
     for pos in range(len(words)):
         if 'tissue' in words[pos]:
-            tiss_set.add(words[pos-1])
+            tiss_set.add(words[pos - 1])
         if 'cell' in words[pos]:
-            cell_set.add(words[pos-1])
-        if ('cyte' in words[pos])or('blast' in words[pos]):
+            cell_set.add(words[pos - 1])
+        if ('cyte' in words[pos]) or ('blast' in words[pos]):
             cell_set.add(words[pos])
     return [tiss_set, cell_set]
 
@@ -85,6 +85,7 @@ def get_summary(geo_id):
     summary = ' '.join(line for line in geo_xml if '!Series_summary' in line)
     title = ' '.join(line for line in geo_xml if '!Series_title' in line)
     return ' '.join([title, summary, overall_design])
+
 
 if os.path.isfile('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle'):
     with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'rb') as f:

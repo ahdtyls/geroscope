@@ -1,6 +1,5 @@
 __author__ = 'maximk'
 
-
 import pickle
 import ftplib
 import urllib
@@ -46,7 +45,7 @@ def platform(gpls):
     """
     platforms = []
     for gpl in gpls.split(sep=';'):
-        gpl_id = '1' + (8-len(str(gpl)))*'0' + str(gpl)
+        gpl_id = '1' + (8 - len(str(gpl))) * '0' + str(gpl)
         handle = Entrez.esummary(db="gds", id=gpl_id)
         summary = Entrez.read(handle)
         platforms.append(summary[0]['title'])
@@ -60,7 +59,7 @@ def check_design(drug_name, geo_id):
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
     geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
     overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
-    if (drug_name in overall_design)or(drug_name.lower() in overall_design):
+    if (drug_name in overall_design) or (drug_name.lower() in overall_design):
         return True
     else:
         return False
@@ -70,8 +69,8 @@ def check_presence(drug_name, summary):
     """
     Проверяет, на самом ли деле в названии или описании эксперимента говорится о заданном лекарстве
     """
-    if (drug_name in summary[0]['title'])or(drug_name in summary[0]['summary'])\
-            or (drug_name.lower() in summary[0]['title'])or(drug_name.lower() in summary[0]['summary']):
+    if (drug_name in summary[0]['title']) or (drug_name in summary[0]['summary']) \
+            or (drug_name.lower() in summary[0]['title']) or (drug_name.lower() in summary[0]['summary']):
         return True
     else:
         return check_design(drug_name, summary[0]['GSE'])
@@ -98,11 +97,11 @@ def retrieve_record(gero_dict):
                                 file.write('%s;%s;%s;%s;%s;%s;GPL%s;%s\n' %
                                            (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                             summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
-                            if(gero_dict_copy[drug][alias])and(geo_id in gero_dict_copy[drug][alias]):
+                            if (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                                 gero_dict_copy[drug][alias].remove(geo_id)
                                 with open('/home/maximk/Work/geroscope/gero_dict_unprocess7.pickle', 'wb') as f:
                                     pickle.dump(gero_dict_copy, f)
-                    elif(gero_dict_copy[drug][alias])and(geo_id in gero_dict_copy[drug][alias]):
+                    elif (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                         gero_dict_copy[drug][alias].remove(geo_id)
                         with open('/home/maximk/Work/geroscope/gero_dict_unprocess7.pickle', 'wb') as f:
                             pickle.dump(gero_dict_copy, f)

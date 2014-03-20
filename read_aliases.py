@@ -2,10 +2,12 @@ __author__ = 'maximk'
 
 import pickle
 import os.path
-
 from copy import deepcopy
 from Bio import Entrez
+
 from geo import retrieve_record
+
+
 Entrez.email = 'kuleshov.max.v@gmail.com'
 
 
@@ -42,7 +44,7 @@ def set_id_list(geroprot):
     geroprot_copy = deepcopy(geroprot)
     for drug in geroprot.keys():
         for alias in geroprot[drug].keys():
-            if(drug != alias)and(not(geroprot[drug][alias])):
+            if (drug != alias) and (not (geroprot[drug][alias])):
                 geroprot_copy[drug].pop(alias)
     geroprot = geroprot_copy
 
@@ -63,6 +65,7 @@ def set_id_list(geroprot):
                         geroprot[drug][drug].remove(id_drug)
 
     return geroprot_copy
+
 
 path = '/home/maximk/Work/geroscope/drugs7.txt'
 geroprot = open(path, 'r').read().split(sep='\n')
