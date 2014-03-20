@@ -19,8 +19,8 @@ def get_id_list():
               'AND "Homo sapiens"[Organism] AND "attribute name tissue"[Filter]' \
               ' AND ("20"[n_samples] : "500"[n_samples]))'
     handle = Entrez.esearch(db='gds', retmax=1000, term=pattern)
-    record = Entrez.read(handle)
-    return record['IdList']
+    geo_record = Entrez.read(handle)
+    return geo_record['IdList']
 
 
 def get_tissue(summary):
@@ -67,11 +67,11 @@ def get_paper(pmids):
     handle = Entrez.efetch(db="pubmed", id=[str(pmid) for pmid in pmids], rettype="medline", retmode="text")
     records = Medline.parse(handle)
 
-    for record in records:
-        authors = record.get("AU", "?")
+    for pm_record in records:
+        authors = pm_record.get("AU", "?")
         if len(authors) > 2:
             authors = '%s, %s et al.' % (authors[0], authors[1])
-        papers.append('%s, %s, %s' % (record.get("TI", "?"), authors, record.get("SO", "?")))
+        papers.append('%s, %s, %s' % (pm_record.get("TI", "?"), authors, pm_record.get("SO", "?")))
     return '\n'.join(papers)
 
 

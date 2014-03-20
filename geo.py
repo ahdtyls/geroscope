@@ -10,7 +10,7 @@ from copy import deepcopy
 Entrez.email = 'kuleshov.max.v@gmail.com'
 
 
-def cel(ftp_adress):
+def cel(ftp_address):
     """
     Проверяет наличие CEL-файлов
     """
@@ -18,7 +18,7 @@ def cel(ftp_adress):
     try:
         ftp = ftplib.FTP('ftp.ncbi.nlm.nih.gov')
         ftp.login()
-        ftp.cwd(ftp_adress[26:])
+        ftp.cwd(ftp_address[26:])
         files_list = ftp.mlsd()
         if 'suppl' in files_list:
             ftp.cwd('suppl')
