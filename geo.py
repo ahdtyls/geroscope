@@ -26,7 +26,7 @@ def cel(ftp_adress):
         if 'filelist.txt' in files_list:
             ftp.retrbinary('RETR filelist.txt', open('filelist.txt', 'wb').write)
 
-        filelist = open('/home/maximk/PycharmProjects/heroscope/filelist.txt', 'r').read()
+        filelist = open('/home/maximk/PycharmProjects/geroscope/filelist.txt', 'r').read()
         for line in filelist.split(sep='\n'):
             if 'CEL' in line:
                 cel_pres = '+'
