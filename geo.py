@@ -52,28 +52,30 @@ def platform(gpls):
     return platforms
 
 
-def check_design(drug_name, geo_id):
+def check_design(drug_names, geo_id):
     """
     Проверяет, есть ли название лекарства в overall design
     """
+
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
     geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
     overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
-    if (drug_name in overall_design) or (drug_name.lower() in overall_design):
-        return True
-    else:
-        return False
+    for drug_name in drug_names:
+        if (drug_name in overall_design) or (drug_name.lower() in overall_design):
+            return True
+    return False
 
 
 def check_presence(drug_name, summary):
     """
     Проверяет, на самом ли деле в названии или описании эксперимента говорится о заданном лекарстве
     """
-    if (drug_name in summary[0]['title']) or (drug_name in summary[0]['summary']) \
-            or (drug_name.lower() in summary[0]['title']) or (drug_name.lower() in summary[0]['summary']):
-        return True
-    else:
-        return check_design(drug_name, summary[0]['GSE'])
+    drug_names = [' ' + drug_name + ' ', ' ' + drug_name + '.', ' ' + drug_name + ',', '(' + drug_name + ')', ]
+    for drug_name in drug_names:
+        if (drug_name in summary[0]['title']) or (drug_name in summary[0]['summary']) \
+                or (drug_name.lower() in summary[0]['title']) or (drug_name.lower() in summary[0]['summary']):
+            return True
+    return check_design(drug_names, summary[0]['GSE'])
 
 
 def retrieve_record(gero_dict):
@@ -93,17 +95,17 @@ def retrieve_record(gero_dict):
                             print('%s;%s;%s;%s;%s;%s;GPL%s;%s' %
                                   (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                    summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
-                            with open('/home/maximk/Work/geroscope/gero7.txt', 'a') as file:
+                            with open('/home/maximk/Work/geroscope/retry.txt', 'a') as file:
                                 file.write('%s;%s;%s;%s;%s;%s;GPL%s;%s\n' %
                                            (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                             summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
                             if (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                                 gero_dict_copy[drug][alias].remove(geo_id)
-                                with open('/home/maximk/Work/geroscope/gero_dict_unprocess7.pickle', 'wb') as f:
+                                with open('/home/maximk/Work/geroscope/retry_unprocess.pickle', 'wb') as f:
                                     pickle.dump(gero_dict_copy, f)
                     elif (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                         gero_dict_copy[drug][alias].remove(geo_id)
-                        with open('/home/maximk/Work/geroscope/gero_dict_unprocess7.pickle', 'wb') as f:
+                        with open('/home/maximk/Work/geroscope/retry_unprocess.pickle', 'wb') as f:
                             pickle.dump(gero_dict_copy, f)
     return None
 
