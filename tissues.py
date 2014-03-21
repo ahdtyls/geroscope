@@ -12,14 +12,14 @@ from copy import deepcopy
 from geo import platform
 
 
-def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
+def retry(exceptiontocheck, tries=4, delay=3, backoff=2, logger=None):
     """Retry calling the decorated function using an exponential backoff.
 
     http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
     original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
 
-    :param ExceptionToCheck: the exception to check. may be a tuple of exceptions to check
-    :type ExceptionToCheck: Exception or tuple
+    :param exceptiontocheck: the exception to check. may be a tuple of exceptions to check
+    :type exceptiontocheck: Exception or tuple
     :param tries: number of times to try (not retry) before giving up
     :type tries: int
     :param delay: initial delay between retries in seconds
@@ -35,8 +35,9 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
             mtries, mdelay = tries, delay
             while mtries > 1:
                 try:
+                    # noinspection PyArgumentList
                     return f(*args, **kwargs)
-                except ExceptionToCheck as e:
+                except exceptiontocheck as e:
                     msg = '%s, Retrying in %d seconds...' % (str(e), mdelay)
                     if logger:
                         logger.warning(msg)
@@ -45,6 +46,7 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff
+            # noinspection PyArgumentList
             return f(*args, **kwargs)
         return f_retry  # true decorator
     return deco_retry
@@ -53,6 +55,8 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 @retry(urllib.error.URLError)
 def get_id_list():
     """
+
+    :rtype: None
     Возвращает список id, удовлетворяющих запросу
     """
     pattern = '"age"[All Fields] AND "Homo sapiens"[Organism] AND (expression profiling by array[DataSet Type] ' \
@@ -66,6 +70,9 @@ def get_id_list():
 
 def get_tissue(summary):
     """
+
+    :param summary:
+    :rtype: list
     Возвращает название ткани или клеток
     """
     tissues = ['brain', 'skin', 'kidney', 'liver', 'intestine', 'ovaries',
@@ -95,6 +102,9 @@ def get_tissue(summary):
 @retry(urllib.error.URLError)
 def retrieve_record(geo_id):
     """
+
+    :param geo_id:
+    :rtype : object
     Получает запись по id
     """
     handle = Entrez.esummary(db='gds', id=geo_id)
@@ -104,6 +114,9 @@ def retrieve_record(geo_id):
 @retry(urllib.error.URLError)
 def get_paper(pmids):
     """
+
+    :param pmids:
+    :rtype: str
     Возвращает название статьи и список авторов
     """
     papers = []
@@ -120,6 +133,9 @@ def get_paper(pmids):
 
 def get_summary(geo_id):
     """
+
+    :param geo_id:
+    :rtype: str
     Возвращает Title, текст Summary и текст Overall design
     """
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
