@@ -123,12 +123,13 @@ def get_summary(geo_id):
     Возвращает Title, текст Summary и текст Overall design
     """
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
-    geo_xml = urllib.Request.urlopen(url).read().decode('utf-8').split(sep='\n')
+    geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
     overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
     summary = ' '.join(line for line in geo_xml if '!Series_summary' in line)
     title = ' '.join(line for line in geo_xml if '!Series_title' in line)
     return ' '.join([title, summary, overall_design])
 
+Entrez.email = 'kuleshov.max.v@gmail.com'
 
 if os.path.isfile('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle'):
     with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'rb') as f:
@@ -144,7 +145,7 @@ else:
 id_list_copy = deepcopy(id_list)
 
 for geo_id in id_list:
-    record = retrieve_record(id)
+    record = retrieve_record(geo_id)
     paper = get_paper(record[0]['PubMedIds'])
     ts = get_tissue(get_summary(record[0]['GSE']))
     #  Title, Tissue, Cell, GSE, DataSet type, Samples, GEO Platform ID, Array type, Papers
@@ -154,7 +155,7 @@ for geo_id in id_list:
                     ', '.join(record[0]['gdsType'].split(sep=';')), record[0]['n_samples'],
                     ', '.join('GPL' + geo_id for geo_id in record[0]['GPL'].split(sep=';')),
                     ', '.join(platform(record[0]['GPL'])), paper))
-    id_list_copy.remove(id)
+    id_list_copy.remove(geo_id)
     print(len(id_list_copy))
     with open('/home/maximk/Work/geroscope/tissues/id_list_unprocess.pickle', 'wb') as f:
         pickle.dump(id_list_copy, f)
