@@ -4,12 +4,53 @@ import urllib
 import pickle
 import os.path
 import re
+import time
+from functools import wraps
 from Bio import Entrez, Medline
 from copy import deepcopy
 
 from geo import platform
 
 
+def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
+    """Retry calling the decorated function using an exponential backoff.
+
+    http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
+    original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
+
+    :param ExceptionToCheck: the exception to check. may be a tuple of exceptions to check
+    :type ExceptionToCheck: Exception or tuple
+    :param tries: number of times to try (not retry) before giving up
+    :type tries: int
+    :param delay: initial delay between retries in seconds
+    :type delay: int
+    :param backoff: backoff multiplier e.g. value of 2 will double the delay each retry
+    :type backoff: int
+    :param logger: logger to use. If None, print
+    :type logger: logging.Logger instance
+    """
+    def deco_retry(f):
+        @wraps(f)
+        def f_retry(*args, **kwargs):
+            mtries, mdelay = tries, delay
+            while mtries > 1:
+                try:
+                    return f(*args, **kwargs)
+                except ExceptionToCheck as e:
+                    msg = '%s, Retrying in %d seconds...' % (str(e), mdelay)
+                    if logger:
+                        logger.warning(msg)
+                    else:
+                        print(msg)
+                    time.sleep(mdelay)
+                    mtries -= 1
+                    mdelay *= backoff
+            return f(*args, **kwargs)
+        return f_retry  # true decorator
+    return deco_retry
+
+
+@retry(urllib.error.URLError)
 def get_id_list():
     """
     Возвращает список id, удовлетворяющих запросу
@@ -51,6 +92,7 @@ def get_tissue(summary):
     return [tiss_set, cell_set]
 
 
+@retry(urllib.error.URLError)
 def retrieve_record(geo_id):
     """
     Получает запись по id
@@ -59,6 +101,7 @@ def retrieve_record(geo_id):
     return Entrez.read(handle)
 
 
+@retry(urllib.error.URLError)
 def get_paper(pmids):
     """
     Возвращает название статьи и список авторов
@@ -80,7 +123,7 @@ def get_summary(geo_id):
     Возвращает Title, текст Summary и текст Overall design
     """
     url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
-    geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
+    geo_xml = urllib.Request.urlopen(url).read().decode('utf-8').split(sep='\n')
     overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
     summary = ' '.join(line for line in geo_xml if '!Series_summary' in line)
     title = ' '.join(line for line in geo_xml if '!Series_title' in line)
