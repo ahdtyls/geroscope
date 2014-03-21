@@ -104,6 +104,7 @@ def retrieve_record(geo_id):
     """
 
     :param geo_id:
+    :type geo_id: str
     :rtype : object
     Получает запись по id
     """
@@ -135,6 +136,7 @@ def get_summary(geo_id):
     """
 
     :param geo_id:
+    :type geo_id: str
     :rtype: str
     Возвращает Title, текст Summary и текст Overall design
     """
