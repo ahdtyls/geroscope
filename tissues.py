@@ -68,10 +68,60 @@ def get_id_list():
     return geo_record['IdList']
 
 
+@retry(urllib.error.URLError)
+def retrieve_record(geo_id):
+    """
+
+    :param geo_id: GEO id
+    :type geo_id: str
+    :rtype : object
+    Получает запись по id
+    """
+    handle = Entrez.esummary(db='gds', id=geo_id)
+    return Entrez.read(handle)
+
+
+@retry(urllib.error.URLError)
+def get_paper(pmids):
+    """
+
+    :param pmids: PubMed ids of papers
+    :type pmids: list
+    :rtype: str
+    Возвращает название статьи и список авторов
+    """
+    papers = []
+    handle = Entrez.efetch(db="pubmed", id=[str(pmid) for pmid in pmids], rettype="medline", retmode="text")
+    records = Medline.parse(handle)
+
+    for pm_record in records:
+        authors = pm_record.get("AU", "?")
+        if len(authors) > 2:
+            authors = '%s, %s et al.' % (authors[0], authors[1])
+        papers.append('%s, %s, %s' % (pm_record.get("TI", "?"), authors, pm_record.get("SO", "?")))
+    return '\n'.join(papers)
+
+
+def get_summary(geo_id):
+    """
+
+    :param geo_id: GEO id
+    :type geo_id: str
+    :rtype: str
+    Возвращает Title, текст Summary и текст Overall design
+    """
+    url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
+    geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
+    overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
+    summary = ' '.join(line for line in geo_xml if '!Series_summary' in line)
+    title = ' '.join(line for line in geo_xml if '!Series_title' in line)
+    return ' '.join([title, summary, overall_design])
+
+
 def get_tissue(summary):
     """
 
-    :param summary:
+    :param summary: title + summary + overall design
     :rtype: list
     Возвращает название ткани или клеток
     """
@@ -98,54 +148,6 @@ def get_tissue(summary):
             cell_set.add(words[pos])
     return [tiss_set, cell_set]
 
-
-@retry(urllib.error.URLError)
-def retrieve_record(geo_id):
-    """
-
-    :param geo_id:
-    :type geo_id: str
-    :rtype : object
-    Получает запись по id
-    """
-    handle = Entrez.esummary(db='gds', id=geo_id)
-    return Entrez.read(handle)
-
-
-@retry(urllib.error.URLError)
-def get_paper(pmids):
-    """
-
-    :param pmids:
-    :rtype: str
-    Возвращает название статьи и список авторов
-    """
-    papers = []
-    handle = Entrez.efetch(db="pubmed", id=[str(pmid) for pmid in pmids], rettype="medline", retmode="text")
-    records = Medline.parse(handle)
-
-    for pm_record in records:
-        authors = pm_record.get("AU", "?")
-        if len(authors) > 2:
-            authors = '%s, %s et al.' % (authors[0], authors[1])
-        papers.append('%s, %s, %s' % (pm_record.get("TI", "?"), authors, pm_record.get("SO", "?")))
-    return '\n'.join(papers)
-
-
-def get_summary(geo_id):
-    """
-
-    :param geo_id:
-    :type geo_id: str
-    :rtype: str
-    Возвращает Title, текст Summary и текст Overall design
-    """
-    url = 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s&targ=self&form=text&view=brief' % geo_id
-    geo_xml = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
-    overall_design = ' '.join(line for line in geo_xml if '!Series_overall_design' in line)
-    summary = ' '.join(line for line in geo_xml if '!Series_summary' in line)
-    title = ' '.join(line for line in geo_xml if '!Series_title' in line)
-    return ' '.join([title, summary, overall_design])
 
 Entrez.email = 'kuleshov.max.v@gmail.com'
 
