@@ -26,7 +26,6 @@ for drug in drugs:
                     if target_field.tag == '{http://drugbank.ca}organism':
                         target_line[1] = target_field.text
 
-
                     if target_field.tag == '{http://drugbank.ca}actions':
                         for action_field in target_field:
                             if action_field.tag == '{http://drugbank.ca}action':
@@ -51,8 +50,8 @@ for drug in drugs:
                                             extern_line[2] = extern_id[1].text
                                     target_line[5] = ';'.join(extern_line)
                 for i in range(len(target_line)):
-                    if target_line[i] == None:
+                    if not target_line[i]:
                         target_line[i] = ''
                 targets.append(target_line)
-    with open('/home/maximk/Work/geroscope/drugbank/drugbank_out.csv','a') as file:
+    with open('/home/maximk/Work/geroscope/drugbank/drugbank_out.csv', 'a') as file:
         file.write('%s;%s\n' % (';'.join(drug_line), '\n;;'.join(';'.join(line) for line in targets)))
