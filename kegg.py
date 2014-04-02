@@ -32,7 +32,7 @@ def get_target_genes(target_ids):
     return {'KO': ', '.join(ko_names), 'HSA': ', '.join(hsa_names)}
 
 
-with open('/home/maximk/Work/geroscope/kegg/drug.db', 'r') as kegg_db:
+with open('/home/maximk/Work/geroscope/kegg/drug4', 'r') as kegg_db:
     kegg_drugs = kegg_db.read().split(sep='\n///\n')
 
 kegg_dict = dict()
@@ -84,5 +84,5 @@ for drug in kegg_keys:
             elif link.split(sep=':')[0].strip() == 'DrugBank':
                 drugbank_id = link.split(sep=':')[1].strip()
 
-    with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
+    with open('/home/maximk/Work/geroscope/kegg/kegg4.csv', 'a') as kegg_file:
         kegg_file.write('%s;%s;%s;%s;%s;%s;%s' % (drug, kegg_dict[drug]['ENTRY'], kegg_dict[drug]['NAME'], kegg_dict[drug]['ALIAS'], pubchem_id, drugbank_id, target_na))
