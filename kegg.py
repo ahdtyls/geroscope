@@ -1,7 +1,9 @@
 __author__ = 'maximk'
 
 import urllib.request
+from tissues import retry
 
+@retry(urllib.error.URLError)
 def get_target_genes(target_ids):
     """
 
