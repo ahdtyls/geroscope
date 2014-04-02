@@ -1,5 +1,34 @@
 __author__ = 'maximk'
 
+import urllib.request
+
+def get_target_genes(target_ids):
+    """
+
+    """
+    ko_names = []
+    hsa_names = []
+
+    target_tails = list()
+    for line in target_ids:
+        if 'HSA' in line:
+            target_tails.extend(['hsa:'+hsa_id for hsa_id in line.replace('HSA:', '').replace(']', '').split()])
+        elif 'KO' in line:
+            target_tails.extend(['ko:'+ko_id for ko_id in line.replace('KO:', '').replace(']', '').split()])
+
+    for target_id in target_tails:
+        url = 'http://www.kegg.jp/dbget-bin/www_bget?%s' % target_id
+        kegg_html = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
+        for line in range(len(kegg_html)):
+            if ('<nobr>Name</nobr>' in kegg_html[line]) or ('<nobr>Gene name</nobr>' in kegg_html[line]):
+                names = kegg_html[line + 1].split(sep='>')[-2].replace('<br', '')
+                if 'ko' in target_id:
+                    ko_names.append(names)
+                elif 'hsa' in target_id:
+                    hsa_names.append(names)
+
+    return {'KO': ', '.join(ko_names), 'HSA': ', '.join(hsa_names)}
+
 
 with open('/home/maximk/Work/geroscope/kegg/drug.db', 'r') as kegg_db:
     kegg_drugs = kegg_db.read().split(sep='\n///\n')
@@ -38,7 +67,8 @@ for drug in kegg_keys:
         for target in kegg_dict[drug]['TARGET'].split(sep='\n'):
             target_name = ' '.join(target.split(sep='[')[0].strip().split(sep=' ')[:-1])
             target_action = target.split(sep = '[')[0].strip().split(sep=' ')[-1]
-            target_na.append('%s;%s\n' % (target_name, target_action))
+            target_genes = get_target_genes(target.split(sep='['))
+            target_na.append('%s;%s;%s;%s\n' % (target_name, target_action, target_genes['KO'],target_genes['HSA']))
         target_na = ';;;;;;'.join(target_na)
     else:
         target_na = '\n'
