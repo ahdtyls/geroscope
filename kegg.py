@@ -3,10 +3,12 @@ __author__ = 'maximk'
 import urllib.request
 from tissues import retry
 
+
 @retry(urllib.error.URLError)
 def get_target_genes(target_ids):
     """
-
+    Возвращает гены для таргета из KEGG Orthology и KEGG Homo Sapience
+    :param target_ids: TARGET string from KEGG Drugs
     """
     ko_names = []
     hsa_names = []
@@ -32,21 +34,20 @@ def get_target_genes(target_ids):
     return {'KO': ', '.join(ko_names), 'HSA': ', '.join(hsa_names)}
 
 
-with open('/home/maximk/Work/geroscope/kegg/drug4', 'r') as kegg_db:
+with open('/home/maximk/Work/geroscope/kegg/drug', 'r') as kegg_db:
     kegg_drugs = kegg_db.read().split(sep='\n///\n')
 
 kegg_dict = dict()
 
 for drug in kegg_drugs:
     field = ''
-    id = ''
     value = ''
     empty = ' '*12
-    for line in drug.split(sep = '\n'):
+    for line in drug.split(sep='\n'):
         if line[0:12] != empty:
             if line[0:12].strip() == 'ENTRY':
                 kegg_id = line[12:18]
-                kegg_dict[kegg_id] = {'ENTRY':line[18:].strip()}
+                kegg_dict[kegg_id] = {'ENTRY': line[18:].strip()}
             else:
                 field = line[0:12].strip()
                 value = line[12:].strip()
@@ -68,9 +69,9 @@ for drug in kegg_keys:
     if 'TARGET' in kegg_dict[drug]:
         for target in kegg_dict[drug]['TARGET'].split(sep='\n'):
             target_name = ' '.join(target.split(sep='[')[0].strip().split(sep=' ')[:-1])
-            target_action = target.split(sep = '[')[0].strip().split(sep=' ')[-1]
+            target_action = target.split(sep='[')[0].strip().split(sep=' ')[-1]
             target_genes = get_target_genes(target.split(sep='['))
-            target_na.append('%s;%s;%s;%s\n' % (target_name, target_action, target_genes['KO'],target_genes['HSA']))
+            target_na.append('%s;%s;%s;%s\n' % (target_name, target_action, target_genes['KO'], target_genes['HSA']))
         target_na = ';;;;;;'.join(target_na)
     else:
         target_na = '\n'
@@ -84,5 +85,6 @@ for drug in kegg_keys:
             elif link.split(sep=':')[0].strip() == 'DrugBank':
                 drugbank_id = link.split(sep=':')[1].strip()
 
-    with open('/home/maximk/Work/geroscope/kegg/kegg4.csv', 'a') as kegg_file:
-        kegg_file.write('%s;%s;%s;%s;%s;%s;%s' % (drug, kegg_dict[drug]['ENTRY'], kegg_dict[drug]['NAME'], kegg_dict[drug]['ALIAS'], pubchem_id, drugbank_id, target_na))
+    with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
+        kegg_file.write('%s;%s;%s;%s;%s;%s;%s' % (drug, kegg_dict[drug]['ENTRY'], kegg_dict[drug]['NAME'],
+                                                  kegg_dict[drug]['ALIAS'], pubchem_id, drugbank_id, target_na))
