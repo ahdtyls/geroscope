@@ -1,26 +1,42 @@
 __author__ = 'maximk'
 
-
-from biomartpy import make_lookup, list_marts, list_attributes, list_datasets, list_filters
 from sqlalchemy import create_engine
 
 
+def chem_name(stitch_id):
+    execute = engine.execute("select name from chemicals where chemical = '%s';" % stitch_id)
+    stitch_name = set()
+    if execute.rowcount:
+        for n in execute:
+            print()
+            stitch_name.add(dict(n)['name'])
+    return ', '.join(list(stitch_name))
+
+def parse_ensp(ensp_file):
+    ensp = dict()
+    for line in ensp_file.read().split(sep='\n'):
+        ensp_id = line.split(sep=',')[1].replace('"', '')
+        gene_name = line.split(sep=',')[2].replace('"', '')
+        if ensp_id:
+            ensp[ensp_id] = gene_name
+    return ensp
+
+
+
+ensembl_prot = parse_ensp(open('/home/maximk/Work/geroscope/stitch/ensembl.csv', 'r'))
+
 engine = create_engine('mysql+pymysql://root:root@localhost/stitch')
-# execute = engine.execute('select c.name, a.alias, ac.item_id_a, ac.mode, ac.action from actions ac, chemicals c,'
-#                          'chemical_aliases a where(ac.item_id_b=c.chemical)and(c.chemical=a.chemical);')
 execute = engine.execute('select * from actions;')
 count = 0
 
 for r in execute:
     with open('/home/maximk/Work/geroscope/stitch/stitch.tsv', 'a') as file:
         line = dict(r)
-        file.write('%s\t%s\t%s\t%s\n' % (line['item_id_a'], line['item_id_b'], line['mode'], line['action']))
+        ch_name = chem_name(line['item_id_b'])
+        name1 = line['item_id_a'] + '\t' + chem_name(line['item_id_a']) if 'CID' in line['item_id_a'] \
+            else line['item_id_a'].split(sep='.')[1] + '\t' + ensembl_prot.get(line['item_id_a'].split(sep='.')[1], '')
+        name2 = line['item_id_b'] + '\t' + chem_name(line['item_id_b']) if 'CID' in line['item_id_b'] \
+            else line['item_id_b'].split(sep='.')[1] + '\t' + ensembl_prot.get(line['item_id_b'].split(sep='.')[1], '')
+        file.write('%s\t%s\t%s\t%s\n' % (name1, name2, line['mode'], line['action']))
         count += 1
         print(count)
-
-# mart_name = 'ensembl'
-# dataset = 'hsapiens_gene_ensembl'
-# attributes = ['external_gene_id']
-# filters = {'ensembl_peptide_id': ['ENSP00000216117']}
-# df = make_lookup(mart_name=mart_name, dataset=dataset, attributes=attributes, filters=filters)
-# print(df)
