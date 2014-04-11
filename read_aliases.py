@@ -67,7 +67,7 @@ def set_id_list(geroprot):
     return geroprot_copy
 
 
-path = '/home/maximk/Work/geroscope/retry.txt'
+path = '/home/maximk/Work/geroscope/drugs.txt'
 geroprot = open(path, 'r').read().split(sep='\n')
 
 if os.path.isfile('/home/maximk/Work/geroscope/retry_unprocess.pickle'):

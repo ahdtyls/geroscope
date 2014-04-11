@@ -1,8 +1,26 @@
 __author__ = 'maximk'
 
-# mysql -uroot -p stitch --local-infile
-# create table chemicals(chemical VARCHAR(127), name VARCHAR(255), molecular_weight VARCHAR(255), SMILES_string VARCHAR(255), primary key (chemical));
-# LOAD DATA LOCAL INFILE '/home/maximk/Work/geroscope/stitch/actions.v3.1.tsv' INTO TABLE actions FIELDS TERMINATED BY '\t';
-# create table actions(item_id_a VARCHAR(127), item_id_b VARCHAR(127), mode VARCHAR(255), action VARCHAR(255), a_is_acting int, score int, primary key(item_id_a));
-# LOAD DATA LOCAL INFILE '/home/maximk/Work/geroscope/stitch/chemicals.v3.1.tsv' INTO TABLE chemicals FIELDS TERMINATED BY '\t';
-# show table status from stitch;
+
+from biomartpy import make_lookup, list_marts, list_attributes, list_datasets, list_filters
+from sqlalchemy import create_engine
+
+
+engine = create_engine('mysql+pymysql://root:root@localhost/stitch')
+# execute = engine.execute('select c.name, a.alias, ac.item_id_a, ac.mode, ac.action from actions ac, chemicals c,'
+#                          'chemical_aliases a where(ac.item_id_b=c.chemical)and(c.chemical=a.chemical);')
+execute = engine.execute('select * from actions;')
+count = 0
+
+for r in execute:
+    with open('/home/maximk/Work/geroscope/stitch/stitch.tsv', 'a') as file:
+        line = dict(r)
+        file.write('%s\t%s\t%s\t%s\n' % (line['item_id_a'], line['item_id_b'], line['mode'], line['action']))
+        count += 1
+        print(count)
+
+# mart_name = 'ensembl'
+# dataset = 'hsapiens_gene_ensembl'
+# attributes = ['external_gene_id']
+# filters = {'ensembl_peptide_id': ['ENSP00000216117']}
+# df = make_lookup(mart_name=mart_name, dataset=dataset, attributes=attributes, filters=filters)
+# print(df)
