@@ -67,18 +67,18 @@ def set_id_list(geroprot):
     return geroprot_copy
 
 
-path = '/home/maximk/Work/geroscope/drugs.txt'
-geroprot = open(path, 'r').read().split(sep='\n')
-
-if os.path.isfile('/home/maximk/Work/geroscope/retry_unprocess.pickle'):
-    with open('/home/maximk/Work/geroscope/retry_unprocess.pickle', 'rb') as f:
-        gero_dict = pickle.load(f)
-elif os.path.isfile('/home/maximk/Work/geroscope/retry.pickle'):
-    with open('/home/maximk/Work/geroscope/retry.pickle', 'rb') as f:
-        gero_dict = pickle.load(f)
-else:
-    gero_dict = set_id_list(makedic(geroprot))
-    with open('/home/maximk/Work/geroscope/retry.pickle', 'wb') as f:
-        pickle.dump(gero_dict, f)
-
-retrieve_record(gero_dict)
+# path = '/home/maximk/Work/geroscope/geo/lipo.txt'
+# geroprot = open(path, 'r').read().split(sep='\n')
+#
+# if os.path.isfile('/home/maximk/Work/geroscope/geo/retry_unprocess.pickle'):
+#     with open('/home/maximk/Work/geroscope/geo/retry_unprocess.pickle', 'rb') as f:
+#         gero_dict = pickle.load(f)
+# elif os.path.isfile('/home/maximk/Work/geroscope/geo/retry.pickle'):
+#     with open('/home/maximk/Work/geroscope/geo/retry.pickle', 'rb') as f:
+#         gero_dict = pickle.load(f)
+# else:
+#     gero_dict = set_id_list(makedic(geroprot))
+#     with open('/home/maximk/Work/geroscope/geo/retry.pickle', 'wb') as f:
+#         pickle.dump(gero_dict, f)
+#
+# retrieve_record(gero_dict)

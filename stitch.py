@@ -2,8 +2,12 @@ __author__ = 'maximk'
 
 from sqlalchemy import create_engine
 
+# http://string-stitch.blogspot.ru/2008/02/we-have-api.html
 
 def chem_name(stitch_id):
+    """
+    Получение названия драга из базы
+    """
     execute = engine.execute("select name from chemicals where chemical = '%s';" % stitch_id)
     stitch_name = set()
     if execute.rowcount:
@@ -12,7 +16,11 @@ def chem_name(stitch_id):
             stitch_name.add(dict(n)['name'])
     return ', '.join(list(stitch_name))
 
+
 def parse_ensp(ensp_file):
+    """
+    Парсинг названия генов из ENSEMBL, полученных через biomaRt
+    """
     ensp = dict()
     for line in ensp_file.read().split(sep='\n'):
         ensp_id = line.split(sep=',')[1].replace('"', '')
@@ -20,7 +28,6 @@ def parse_ensp(ensp_file):
         if ensp_id:
             ensp[ensp_id] = gene_name
     return ensp
-
 
 
 ensembl_prot = parse_ensp(open('/home/maximk/Work/geroscope/stitch/ensembl.csv', 'r'))
