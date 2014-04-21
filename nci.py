@@ -5,11 +5,23 @@ import os.path
 import pickle
 from collections import OrderedDict
 
+def parce_nci(nci_file):
+    """
+
+    """
+    return None
+
+def get_nci(nci_id):
+    """
+
+    """
+    return None
+
 if os.path.isfile('/home/maximk/Work/geroscope/nci_cancerindex/nci.pickle'):
     with open('/home/maximk/Work/geroscope/nci_cancerindex/nci.pickle', 'rb') as nci_pickle:
         nci = pickle.load(nci_pickle)
 else:
-    nci = xmltodict.parse(open('/home/maximk/Work/geroscope/nci_cancerindex/nci.xml', 'r').read())
+    nci = xmltodict.parse(open('/home/maximk/Work/geroscope/nci_cancerindex/sample.xml', 'r').read())
     with open('/home/maximk/Work/geroscope/nci_cancerindex/nci.pickle', 'wb') as nci_pickle:
         pickle.dump(nci, nci_pickle)
 
@@ -22,11 +34,12 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
             gene_entry_list = [gene_entry_list]
         for gene_entry in gene_entry_list:
             gene_name = gene_entry.get('HUGOGeneSymbol', '')
-            if gene_name == 'ACSL5':
-                print()
-            gene_genbank = gene_entry.get('GenbankAccession', '')
-            gene_refseq = gene_entry.get('RefSeqID', '')
-            gene_uniprot = gene_entry.get('UniProtID', '')
+
+            if gene_entry.get('SequenceIdentificationCollection', ''):
+                gene_genbank = gene_entry['SequenceIdentificationCollection'].get('GenbankAccession', '')
+                gene_refseq = gene_entry['SequenceIdentificationCollection'].get('RefSeqID', '')
+                gene_uniprot = gene_entry['SequenceIdentificationCollection'].get('UniProtID', '')
+                gene_hugo = gene_entry['SequenceIdentificationCollection'].get('HgncID', '')
 
             if gene_entry.get('Sentence', ''):
                 for sentence_key in gene_entry.keys():
@@ -41,8 +54,8 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
                                 if type(evidence) == list:
                                     evidence = ', '.join(evidence)
 
+                                # todo Запарсить сюда NCI Thesaurus
                                 drug_name = ''
-                                drug_concept = ''
                                 if sentence.get('DrugData', ''):
                                     drug_name = sentence['DrugData'].get('DrugTerm', '')
                                     drug_concept = sentence['DrugData'].get('NCIDrugConceptCode', '')
@@ -54,16 +67,23 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
                                 role = ''
                                 if sentence.get('Roles', ''):
                                     role = sentence['Roles'].get('PrimaryNCIRoleCode', '')
+                                    second_role = sentence['Roles'].get('OtherRole', '')
                                     if type(role) == list:
                                         role = ', '.join(role)
-                                    role = role.replace('_', ' ')
+                                    if type(second_role) == list:
+                                        second_role = ', '.join(second_role)
+                                    role = (role + ' (' + second_role + ')').replace('_', ' ')\
+                                        .replace('Chemical or Drug ', '')\
+                                        .replace('not assigned', '')\
+                                        .replace(' ()', '')
+                                    if(role[1] == '(')and(role[-1] == ')'):
+                                        role = role[1:-1]
 
                                 sentence_status = sentence.get('SentenceStatusFlag').replace('_', ' ')
 
-                                nci_set.add('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n'
-                                                     % (drug_name, drug_concept, gene_name, gene_concept, role,
-                                                        gene_genbank, gene_refseq, gene_uniprot, cell_line, evidence,
-                                                        sentence_status))
+                                nci_set.add('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' %
+                                            (drug_name, gene_name, role, gene_genbank, gene_refseq, gene_uniprot,
+                                             gene_hugo, cell_line, evidence, sentence_status))
     nci_result += list(nci_set)
 
 with open('/home/maximk/Work/geroscope/nci_cancerindex/nci.tsv', 'a') as nci_result_file:
