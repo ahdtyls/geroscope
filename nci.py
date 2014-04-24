@@ -75,9 +75,11 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
                                     role = (role + ' (' + second_role + ')').replace('_', ' ')\
                                         .replace('Chemical or Drug ', '')\
                                         .replace('not assigned', '')\
-                                        .replace(' ()', '')
-                                    if(role[1] == '(')and(role[-1] == ')'):
-                                        role = role[1:-1]
+                                        .replace(' ()', '')\
+                                        .strip()
+                                    if role:
+                                        if(role[0] == '(')and(role[-1] == ')'):
+                                            role = role[1:-1]
 
                                 sentence_status = sentence.get('SentenceStatusFlag').replace('_', ' ')
 
