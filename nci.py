@@ -51,6 +51,7 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
                             if sentence.get('Organism', '') == 'Human':
                                 cell_line = sentence.get('CellineIndicator', '')
                                 evidence = sentence.get('EvidenceCode', '')
+                                pmid = sentence.get('PubMedID', '')
                                 if type(evidence) == list:
                                     evidence = ', '.join(evidence)
 
@@ -83,9 +84,9 @@ for gene_entry_key in nci['GeneEntryCollection'].keys():
 
                                 sentence_status = sentence.get('SentenceStatusFlag').replace('_', ' ')
 
-                                nci_set.add('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' %
+                                nci_set.add('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' %
                                             (drug_name, gene_name, role, gene_genbank, gene_refseq, gene_uniprot,
-                                             gene_hugo, cell_line, evidence, sentence_status))
+                                             gene_hugo, cell_line, evidence, sentence_status, pmid))
     nci_result += list(nci_set)
 
 with open('/home/maximk/Work/geroscope/nci_cancerindex/nci.tsv', 'a') as nci_result_file:
