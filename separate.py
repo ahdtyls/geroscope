@@ -41,3 +41,31 @@
 #             r.append(line+'\n')
 # r.sort()
 # res.writelines(r)
+#
+#
+#
+# evidence = open('/home/maximk/Work/geroscope/nci_cancerindex/evidence.tsv', 'r').read()
+# evi_table = sorted(open('/home/maximk/Work/geroscope/nci_cancerindex/evi_table.tsv', 'r').read().split(sep='\n'), reverse = True)
+#
+# for ev in evi_table:
+#     abb = ev.split(sep='\t')[0]
+#     term = ev.split(sep='\t')[1]
+#     evidence = evidence.replace(abb, term)
+#
+# evidence = evidence.replace('finished', ' (finished)')\
+#         .replace('redundant information', ' (redundant information)')\
+#         .replace('unclear', ' (unclear)')\
+#         .replace('\t', '')
+#
+#
+#
+# with open('/home/maximk/Work/geroscope/nci_cancerindex/evidence_tr.tsv', 'w') as e_t:
+#     e_t.write(evidence)
+#
+# ctd_human = open('/home/maximk/Work/geroscope/dtdb/ctd_human.tsv', 'a')
+#
+# with open('/home/maximk/Work/geroscope/dtdb/ctd_dtdb.tsv', 'r') as ctd:
+#     ctd_file = ctd.read().split(sep='\n')
+#     for line in ctd_file:
+#         if ('9606' in line)and('Homo sapiens' in line):
+#             ctd_human.write(line+'\n')
