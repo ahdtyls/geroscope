@@ -69,3 +69,35 @@
 #     for line in ctd_file:
 #         if ('9606' in line)and('Homo sapiens' in line):
 #             ctd_human.write(line+'\n')
+
+
+stitch_set = set()
+
+stitch_id = open('/home/maximk/Work/geroscope/stitch/stitch_filtered.tsv', 'r').read().split(sep='\n')
+
+for line in stitch_id:
+    for token in line.split():
+        if 'CID0' in token:
+            stitch_set.add(token)
+
+stitch_dict = dict([id, {'ATC': '', 'ChEBI': '', 'ChEMBL': '', 'PC': '', 'PS': '', 'KEGG': ''}] for id in stitch_set)
+
+# # big_stitch = open('/home/maximk/Work/geroscope/stitch/ch_srcaf', 'r')
+small_stitch = open('/home/maximk/Work/geroscope/stitch/chemical_source.tsv', 'r')
+small_stitch_out = open('/home/maximk/Work/geroscope/stitch/chemical_source_out.tsv', 'w')
+#
+#
+# with open('/home/maximk/Work/geroscope/stitch/chemical_source.tsv', 'w') as small_st:
+#     for line in small_stitch:
+#         line = '\t'.join(line.split(sep='\t')[1:])
+#         small_st.writelines(line)
+
+for line in small_stitch:
+    cid = line.split(sep='\t')[0]
+    db = line.split(sep='\t')[1]
+    val = line.split(sep='\t')[2].replace('\n', '')
+    stitch_dict[cid][db] = val
+
+for key in sorted(stitch_dict.keys()):
+    rec = stitch_dict[key]
+    small_stitch_out.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (key, rec['ATC'], rec['PC'], rec['PS'], rec['ChEBI'], rec['ChEMBL'], rec['KEGG']))
