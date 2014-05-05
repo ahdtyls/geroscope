@@ -70,34 +70,36 @@
 #         if ('9606' in line)and('Homo sapiens' in line):
 #             ctd_human.write(line+'\n')
 
+from sqlalchemy import create_engine
 
-stitch_set = set()
 
-stitch_id = open('/home/maximk/Work/geroscope/stitch/stitch_filtered.tsv', 'r').read().split(sep='\n')
+def stitch_score(item_id_a, item_id_b):
+    """
+    Получение скора
+    """
+    execute = engine.execute("select score from actions where (item_id_a = '%s')and(item_id_b = '%s');" % (item_id_a, item_id_b))
+    stitch_score = set()
+    if execute.rowcount:
+        for n in execute:
+            stitch_score.add(str(dict(n)['score']))
+    return ', '.join(list(stitch_score))
 
-for line in stitch_id:
-    for token in line.split():
-        if 'CID0' in token:
-            stitch_set.add(token)
+# plain login&password
+engine = create_engine('mysql+pymysql://root:root@localhost/stitch')
 
-stitch_dict = dict([id, {'ATC': '', 'ChEBI': '', 'ChEMBL': '', 'PC': '', 'PS': '', 'KEGG': ''}] for id in stitch_set)
+with open('/home/maximk/Work/geroscope/stitch/stitch_filtered.tsv', 'r') as stitch_filtered:
+    with open('/home/maximk/Work/geroscope/stitch/stitch_filtered_2.tsv', 'a') as stitch_filtered_2:
+        for line in stitch_filtered:
+            if ('CID' in line.split(sep='\t')[0])and('ENSP' in line.split(sep='\t')[2]):
+                cid = '\t'.join(line.split(sep='\t')[0:2])
+                ensp = '\t'.join(line.split(sep='\t')[2:4])
+                action = '\t'.join(line.split(sep='\t')[4:]).replace('\n', '')
+                score = stitch_score(line.split(sep='\t')[0], '9606.' + line.split(sep='\t')[2])
+            elif('CID' in line.split(sep='\t')[2])and('ENSP' in line.split(sep='\t')[0]):
+                cid = '\t'.join(line.split(sep='\t')[2:4])
+                ensp = '\t'.join(line.split(sep='\t')[0:2])
+                action = '\t'.join(line.split(sep='\t')[4:]).replace('\n', '')
+                score = stitch_score('9606.' + line.split(sep='\t')[0], line.split(sep='\t')[2])
+            stitch_filtered_2.write('%s\t%s\t%s\t%s\n' % (cid, ensp, action, score))
 
-# # big_stitch = open('/home/maximk/Work/geroscope/stitch/ch_srcaf', 'r')
-small_stitch = open('/home/maximk/Work/geroscope/stitch/chemical_source.tsv', 'r')
-small_stitch_out = open('/home/maximk/Work/geroscope/stitch/chemical_source_out.tsv', 'w')
-#
-#
-# with open('/home/maximk/Work/geroscope/stitch/chemical_source.tsv', 'w') as small_st:
-#     for line in small_stitch:
-#         line = '\t'.join(line.split(sep='\t')[1:])
-#         small_st.writelines(line)
 
-for line in small_stitch:
-    cid = line.split(sep='\t')[0]
-    db = line.split(sep='\t')[1]
-    val = line.split(sep='\t')[2].replace('\n', '')
-    stitch_dict[cid][db] = val
-
-for key in sorted(stitch_dict.keys()):
-    rec = stitch_dict[key]
-    small_stitch_out.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (key, rec['ATC'], rec['PC'], rec['PS'], rec['ChEBI'], rec['ChEMBL'], rec['KEGG']))
