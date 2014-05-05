@@ -94,7 +94,7 @@ for line in small_stitch:
 with open('/home/maximk/Work/geroscope/stitch/chemical_source_out.tsv', 'a') as small_stitch_out:
     for key in sorted(stitch_dict.keys()):
         rec = stitch_dict[key]
-        small_stitch_out.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t\t\t%s\t%s\t\t%s\n' %
+        small_stitch_out.write('%s\t%s\t%s\t\t\t%s\t%s\t%s\t%s\t%s\t%s\t\t\t%s\t%s\t\t%s\n' %
                                (stitch_set[key]['name'], chem_alias(key), rec['ATC'], rec['PC'], rec['PS'],
                                 rec['ChEBI'], rec['ChEMBL'], rec['KEGG'], stitch_set[key]['action'],
                                 stitch_set[key]['score'], stitch_set[key]['gene_symbol'], stitch_set[key]['ensp']))
