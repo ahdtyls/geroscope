@@ -56,40 +56,40 @@ kegg_keys.sort()
 
 # drug = kegg_id
 for drug in kegg_keys:
-    name = kegg_dict[drug]['NAME'].split(sep=';\n')[0]
-    alias = ', '.join(kegg_dict[drug]['NAME'].split(sep=';\n')[1:])
-    kegg_dict[drug]['NAME'] = name
-    kegg_dict[drug]['ALIAS'] = alias
-
-    pubchem_id = ''
-    drugbank_id = ''
-    cas = ''
-    atc = ''
-
-    if 'REMARK' in kegg_dict[drug]:
-        for remark in kegg_dict[drug]['REMARK'].split(sep='\n'):
-            if remark.split(sep=':')[0].strip() == 'ATC code':
-                atc = ', '.join(remark.split(sep=':')[1].strip().split())
-
-    if 'DBLINKS' in kegg_dict[drug]:
-        for link in kegg_dict[drug]['DBLINKS'].split(sep='\n'):
-            if link.split(sep=':')[0].strip() == 'PubChem':
-                pubchem_id = link.split(sep=':')[1].strip()
-            elif link.split(sep=':')[0].strip() == 'DrugBank':
-                drugbank_id = link.split(sep=':')[1].strip()
-            elif link.split(sep=':')[0].strip() == 'CAS':
-                cas = link.split(sep=':')[1].strip()
-
-    target_na = []
-
     if 'TARGET' in kegg_dict[drug]:
-        for target in kegg_dict[drug]['TARGET'].split(sep='\n'):
-            target_name = ' '.join(target.split(sep='[')[0].strip().split(sep=' ')[:-1])
-            target_action = target.split(sep='[')[0].strip().split(sep=' ')[-1]
-            target_genes = get_target_genes(target.split(sep='['))
-            target_na.append('%s\t\t\t\t\t%s\t%s\n' % (target_action, target_genes, target_name))
+        name = kegg_dict[drug]['NAME'].split(sep=';\n')[0]
+        alias = ', '.join(kegg_dict[drug]['NAME'].split(sep=';\n')[1:])
+        kegg_dict[drug]['NAME'] = name
+        kegg_dict[drug]['ALIAS'] = alias
 
-    if target_na:
-        for target_rec in target_na:
-            with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
-                kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' % (name, alias, atc, cas, pubchem_id, drug, target_rec))
+        pubchem_id = ''
+        drugbank_id = ''
+        cas = ''
+        atc = ''
+
+        if 'REMARK' in kegg_dict[drug]:
+            for remark in kegg_dict[drug]['REMARK'].split(sep='\n'):
+                if remark.split(sep=':')[0].strip() == 'ATC code':
+                    atc = ', '.join(remark.split(sep=':')[1].strip().split())
+
+        if 'DBLINKS' in kegg_dict[drug]:
+            for link in kegg_dict[drug]['DBLINKS'].split(sep='\n'):
+                if link.split(sep=':')[0].strip() == 'PubChem':
+                    pubchem_id = link.split(sep=':')[1].strip()
+                elif link.split(sep=':')[0].strip() == 'DrugBank':
+                    drugbank_id = link.split(sep=':')[1].strip()
+                elif link.split(sep=':')[0].strip() == 'CAS':
+                    cas = link.split(sep=':')[1].strip()
+
+
+
+
+            target_na = []
+            for target in kegg_dict[drug]['TARGET'].split(sep='\n'):
+                target_name = ' '.join(target.split(sep='[')[0].strip().split(sep=' ')[:-1])
+                target_action = target.split(sep='[')[0].strip().split(sep=' ')[-1]
+                target_genes = get_target_genes(target.split(sep='['))
+                target_na.append('%s\t\t\t\t\t%s\t%s\n' % (target_action, target_genes, target_name))
+            for target_rec in target_na:
+                with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
+                    kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' % (name, alias, atc, cas, pubchem_id, drug, target_rec))
