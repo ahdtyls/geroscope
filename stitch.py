@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 
 # http://string-stitch.blogspot.ru/2008/02/we-have-api.html
 
+
 def chem_name(stitch_id):
     """
     Получение названия драга из базы
@@ -14,6 +15,7 @@ def chem_name(stitch_id):
         for n in execute:
             stitch_name.add(dict(n)['name'])
     return ', '.join(list(stitch_name))
+
 
 def chem_alias(stitch_id):
     """
@@ -72,7 +74,8 @@ stitch_set = dict([line.split(sep='\t')[0], {'name': line.split(sep='\t')[1],
 #             stitch_set.add(token)
 
 
-stitch_dict = dict([id, {'ATC': '', 'ChEBI': '', 'ChEMBL': '', 'PC': '', 'PS': '', 'KEGG': ''}] for id in stitch_set.keys())
+stitch_dict = dict([stitch_id, {'ATC': '', 'ChEBI': '', 'ChEMBL': '', 'PC': '', 'PS': '', 'KEGG': ''}]
+                   for stitch_id in stitch_set.keys())
 
 # # big_stitch = open('/home/maximk/Work/geroscope/stitch/ch_srcaf', 'r')
 small_stitch = open('/home/maximk/Work/geroscope/stitch/chemical_source.tsv', 'r')
