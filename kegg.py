@@ -1,7 +1,10 @@
 __author__ = 'maximk'
 
 import urllib.request
+import os.path
+import pickle
 from tissues import retry
+from copy import deepcopy
 
 @retry(urllib.error.URLError)
 def get_target_genes(target_ids):
@@ -44,17 +47,22 @@ def get_target_genes(target_ids):
                                 .replace('<a href="http://www.uniprot.org/uniprot/', '')\
                                 .replace('">', ' ').replace('</a>', ' ')
                             uniprot.extend(list((set(uniprot_line.strip().split()))))
-            hsa_cache[target_id] = {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
+            hsa_cache[target_id] = {'gene_symbol': hsa_names, 'uniprot': uniprot, 'ensg': ensg}
 
+    with open('/home/maximk/Work/geroscope/kegg/kegg_hsa.pickle', 'wb') as f:
+        pickle.dump(hsa_cache, f)
     return {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
 
 
 with open('/home/maximk/Work/geroscope/kegg/drug.db', 'r') as kegg_db:
     kegg_drugs = kegg_db.read().split(sep='\n///\n')
 
-kegg_dict = dict()
 hsa_cache = dict()
+if os.path.isfile('/home/maximk/Work/geroscope/kegg/kegg_hsa.pickle'):
+    with open('/home/maximk/Work/geroscope/kegg/kegg_hsa.pickle', 'rb') as f:
+        hsa_cache = pickle.load(f)
 
+kegg_dict = dict()
 for drug in kegg_drugs:
     field = ''
     value = ''
@@ -72,8 +80,14 @@ for drug in kegg_drugs:
             value = line[12:].strip()
             kegg_dict[kegg_id][field] += '\n' + value
 
-kegg_keys = list(kegg_dict.keys())
-kegg_keys.sort()
+if os.path.isfile('/home/maximk/Work/geroscope/kegg/kegg_keys.pickle'):
+    with open('/home/maximk/Work/geroscope/kegg/kegg_keys.pickle', 'rb') as f:
+        kegg_keys = pickle.load(f)
+else:
+    kegg_keys = list(kegg_dict.keys())
+    kegg_keys.sort()
+
+tmp = deepcopy(kegg_keys)
 
 # drug = kegg_id
 for drug in kegg_keys:
@@ -111,3 +125,7 @@ for drug in kegg_keys:
             for target_rec in target_na:
                 with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
                     kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' % (name, alias, atc, cas, pubchem_id, drug, target_rec))
+
+    del tmp[0]
+    with open('/home/maximk/Work/geroscope/kegg/kegg_keys.pickle', 'wb') as f:
+        pickle.dump(tmp, f)
