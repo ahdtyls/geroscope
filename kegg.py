@@ -33,7 +33,8 @@ def get_target_genes(target_ids):
             for line in range(len(kegg_html)):
                 if '<nobr>Gene name</nobr>' in kegg_html[line]:
                     names = kegg_html[line + 1].split(sep='>')[-2].replace('<br', '')
-                    hsa_names.append(names)
+                    hsa_names.extend(list((set(names.strip().split(sep=', ')))))
+                    hsa_names = list(set(hsa_names))
                 elif('Other DBs' in kegg_html[line]):
                     clob = kegg_html[line+1].split(sep='</div>')
                     for db_line in clob:
@@ -42,15 +43,20 @@ def get_target_genes(target_ids):
                                 .replace('<a href="http://www.ensembl.org/Homo_sapiens/geneview?gene=', '')\
                                 .replace('">', ' ').replace('</a>', ' ')
                             ensg.extend(list((set(ensg_line.strip().split()))))
+                            ensg = list(set(ensg))
                         elif 'uniprot' in db_line:
                             uniprot_line = db_line.replace('<div style="margin-left:5em">', '')\
                                 .replace('<a href="http://www.uniprot.org/uniprot/', '')\
                                 .replace('">', ' ').replace('</a>', ' ')
                             uniprot.extend(list((set(uniprot_line.strip().split()))))
-            hsa_cache[target_id] = {'gene_symbol': hsa_names, 'uniprot': uniprot, 'ensg': ensg}
+                            uniprot = list(set(uniprot))
+            hsa_cache[target_id] = {'gene_symbol': sorted(hsa_names), 'uniprot': sorted(uniprot), 'ensg': sorted(ensg)}
 
     with open('/home/maximk/Work/geroscope/kegg/kegg_hsa.pickle', 'wb') as f:
         pickle.dump(hsa_cache, f)
+    hsa_names = sorted(list(set(hsa_names)))
+    uniprot = sorted(list(set(uniprot)))
+    ensg = sorted(list(set(ensg)))
     return {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
 
 
