@@ -33,12 +33,12 @@ def get_target_genes(target_ids):
                         ensg_line = db_line.replace('<div style="margin-left:5em">', '')\
                             .replace('<a href="http://www.ensembl.org/Homo_sapiens/geneview?gene=', '')\
                             .replace('">', ' ').replace('</a>', ' ')
-                        ensg.append(list((set(ensg_line.strip().split()))))
+                        ensg.extend(list((set(ensg_line.strip().split()))))
                     elif 'uniprot' in db_line:
                         uniprot_line = db_line.replace('<div style="margin-left:5em">', '')\
                             .replace('<a href="http://www.uniprot.org/uniprot/', '')\
                             .replace('">', ' ').replace('</a>', ' ')
-                        uniprot.append(list((set(uniprot_line.strip().split()))))
+                        uniprot.extend(list((set(uniprot_line.strip().split()))))
     return {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
 
 
