@@ -22,23 +22,30 @@ def get_target_genes(target_ids):
         url = 'http://www.kegg.jp/dbget-bin/www_bget?%s' % target_id
         kegg_html = urllib.request.urlopen(url).read().decode('utf-8').split(sep='\n')
 
-        for line in range(len(kegg_html)):
-            if '<nobr>Gene name</nobr>' in kegg_html[line]:
-                names = kegg_html[line + 1].split(sep='>')[-2].replace('<br', '')
-                hsa_names.append(names)
-            elif('Other DBs' in kegg_html[line]):
-                clob = kegg_html[line+1].split(sep='</div>')
-                for db_line in clob:
-                    if 'ensembl' in db_line:
-                        ensg_line = db_line.replace('<div style="margin-left:5em">', '')\
-                            .replace('<a href="http://www.ensembl.org/Homo_sapiens/geneview?gene=', '')\
-                            .replace('">', ' ').replace('</a>', ' ')
-                        ensg.extend(list((set(ensg_line.strip().split()))))
-                    elif 'uniprot' in db_line:
-                        uniprot_line = db_line.replace('<div style="margin-left:5em">', '')\
-                            .replace('<a href="http://www.uniprot.org/uniprot/', '')\
-                            .replace('">', ' ').replace('</a>', ' ')
-                        uniprot.extend(list((set(uniprot_line.strip().split()))))
+        if target_id in hsa_cache:
+            hsa_names.extend(hsa_cache[target_id]['gene_symbol'])
+            uniprot.extend(hsa_cache[target_id]['uniprot'])
+            ensg.extend(hsa_cache[target_id]['ensg'])
+        else:
+            for line in range(len(kegg_html)):
+                if '<nobr>Gene name</nobr>' in kegg_html[line]:
+                    names = kegg_html[line + 1].split(sep='>')[-2].replace('<br', '')
+                    hsa_names.append(names)
+                elif('Other DBs' in kegg_html[line]):
+                    clob = kegg_html[line+1].split(sep='</div>')
+                    for db_line in clob:
+                        if 'ensembl' in db_line:
+                            ensg_line = db_line.replace('<div style="margin-left:5em">', '')\
+                                .replace('<a href="http://www.ensembl.org/Homo_sapiens/geneview?gene=', '')\
+                                .replace('">', ' ').replace('</a>', ' ')
+                            ensg.extend(list((set(ensg_line.strip().split()))))
+                        elif 'uniprot' in db_line:
+                            uniprot_line = db_line.replace('<div style="margin-left:5em">', '')\
+                                .replace('<a href="http://www.uniprot.org/uniprot/', '')\
+                                .replace('">', ' ').replace('</a>', ' ')
+                            uniprot.extend(list((set(uniprot_line.strip().split()))))
+            hsa_cache[target_id] = {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
+
     return {'gene_symbol': ', '.join(hsa_names), 'uniprot': ', '.join(uniprot), 'ensg': ', '.join(ensg)}
 
 
@@ -46,6 +53,7 @@ with open('/home/maximk/Work/geroscope/kegg/drug.db', 'r') as kegg_db:
     kegg_drugs = kegg_db.read().split(sep='\n///\n')
 
 kegg_dict = dict()
+hsa_cache = dict()
 
 for drug in kegg_drugs:
     field = ''
