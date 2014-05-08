@@ -6,6 +6,11 @@ from lxml import etree
 drugbank = etree.parse('/home/maximk/Work/geroscope/drugbank/single.xml')
 drugs = drugbank.getroot()
 
+def parse_pmids(pmid_line):
+    papers = pmid_line.split(sep='\r\n')
+    papers = [paper[-20:].split(sep='/')[-1] for paper in papers]
+    return ', '.join(papers)
+
 for drug in drugs:
     targets = []
     for drug_field in drug:
@@ -20,21 +25,17 @@ for drug in drugs:
             for atc in drug_field:
                 if atc.tag == '{http://drugbank.ca}atc-code':
                     atc = drug_field.text
-
+        ex_id_dict = dict()
         if drug_field.tag == '{http://drugbank.ca}external-identifiers':
-            ex_ids = [ex_id for ex_id in drug_field]
-            for ex_id in ex_ids:
+            for ex_id in drug_field:
                 if ex_id.tag == '{http://drugbank.ca}external-identifier':
-                    print()
-                    # if ex_id.text == 'ChEBI':
-                    #
-                    # if ex_id.text == 'PubChem Compound':
-                    #
-                    # if ex_id.text == 'PubChem Substance':
-                    #
-                    # if ex_id.text == 'KEGG Drug':
-                    #
-                    # if ex_id.text == 'PharmGKB':
+                    in_tag = [tag for tag in ex_id]
+                    ex_id_dict[in_tag[0].text] = in_tag[1].text
+        chebi = ex_id_dict.get('ChEBI', '')
+        pcid = ex_id_dict.get('PubChem Compound', '')
+        psid = ex_id_dict.get('PubChem Substance', '')
+        kegg = ex_id_dict.get('KEGG Drug', '')
+        target_lines = []
 
         if drug_field.tag == '{http://drugbank.ca}targets':
             for target in drug_field:
@@ -52,6 +53,8 @@ for drug in drugs:
 
                     if target_field.tag == '{http://drugbank.ca}references':
                         pmids = target_field.text
+                        if pmids:
+                            pmids = parse_pmids(pmids)
 
                     if target_field.tag == '{http://drugbank.ca}known-action':
                         ph_action = target_field.text
@@ -71,6 +74,8 @@ for drug in drugs:
                                         if extern_id[0].text == 'UniProtKB':
                                             extern_line[2] = extern_id[1].text
                                     t_external_ids = ';'.join(extern_line)
-                targets.append(target_line)
-    with open('/home/maximk/Work/geroscope/drugbank/single_out.csv', 'a') as file:
-        file.write('%s;%s;%s;%s\n' % (name, cas, atc, '\n;;'.join(';'.join(line) for line in targets)))
+                target_lines.append('%s\t%s\t\t%s\t\t%s\t%s' % (action, ph_action, pmids, gene_name, target_name))
+        for target_line in target_lines:
+            if 'Human' in target_line:
+                with open('/home/maximk/Work/geroscope/drugbank/single_out.tsv', 'a') as file:
+                    file.write('%s\t\t%s\t%s\t\t%s\t%s\t%s\t\t%s\t%s\n' % (name, atc, cas, pcid, psid, chebi, kegg, target_line))
