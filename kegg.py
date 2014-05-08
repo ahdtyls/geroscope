@@ -1,10 +1,11 @@
 __author__ = 'maximk'
 
-import urllib.request
+import urllib
 import os.path
 import pickle
 from tissues import retry
 from copy import deepcopy
+
 
 @retry(urllib.error.URLError)
 def get_target_genes(target_ids):
@@ -35,7 +36,7 @@ def get_target_genes(target_ids):
                     names = kegg_html[line + 1].split(sep='>')[-2].replace('<br', '')
                     hsa_names.extend(list((set(names.strip().split(sep=', ')))))
                     hsa_names = list(set(hsa_names))
-                elif('Other DBs' in kegg_html[line]):
+                elif 'Other DBs' in kegg_html[line]:
                     clob = kegg_html[line+1].split(sep='</div>')
                     for db_line in clob:
                         if 'ensembl' in db_line:
@@ -127,10 +128,13 @@ for drug in kegg_keys:
                 target_name = ' '.join(target.split(sep='[')[0].strip().split(sep=' ')[:-1])
                 target_action = target.split(sep='[')[0].strip().split(sep=' ')[-1]
                 target_genes = get_target_genes(target.split(sep='['))
-                target_na.append('%s\t\t\t\t\t%s\t%s\t\t%s\t%s\n' % (target_action, target_genes['gene_symbol'], target_name, target_genes['ensg'], target_genes['uniprot']))
+                target_na.append('%s\t\t\t\t\t%s\t%s\t\t%s\t%s\n' %
+                                 (target_action, target_genes['gene_symbol'], target_name,
+                                  target_genes['ensg'], target_genes['uniprot']))
             for target_rec in target_na:
                 with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
-                    kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' % (name, alias, atc, cas, pubchem_id, drug, target_rec))
+                    kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' %
+                                    (name, alias, atc, cas, pubchem_id, drug, target_rec))
 
     del tmp[0]
     with open('/home/maximk/Work/geroscope/kegg/kegg_keys.pickle', 'wb') as f:
