@@ -6,7 +6,11 @@ from lxml import etree
 drugbank = etree.parse('/home/maximk/Work/geroscope/drugbank/drugbank.xml')
 drugs = drugbank.getroot()
 
+
 def parse_pmids(pmid_line):
+    """
+    Возвращает список pmids, распарсенный из списка статей с url в PubMed
+    """
     papers = pmid_line.split(sep='\r\n')
     papers = [paper[-20:].split(sep='/')[-1] for paper in papers if 'pubmed' in paper]
     return ', '.join(papers)
@@ -44,7 +48,9 @@ for drug in drugs:
         target_lines = []
 
         if drug_field.tag == '{http://drugbank.ca}targets':
+            organism = ''
             for target in drug_field:
+                action, pmids, gene_name, target_name, uniprot = '', '', '', '', ''
                 for target_field in target:
                     if target_field.tag == '{http://drugbank.ca}name':
                         target_name = target_field.text
@@ -73,8 +79,10 @@ for drug in drugs:
                                         if extern_id[0].text == 'UniProtKB':
                                             uniprot.append(extern_id[1].text)
                                     uniprot = ', '.join(uniprot)
-                target_lines.append('%s\t%s\t\t%s\t\t%s\t%s\t\t\t%s\t' % (action, mechanism, pmids, gene_name, target_name, uniprot))
+                target_lines.append('%s\t%s\t\t%s\t\t%s\t%s\t\t\t%s\t' %
+                                    (action, mechanism, pmids, gene_name, target_name, uniprot))
             if organism == 'Human':
                 for target_line in target_lines:
                     with open('/home/maximk/Work/geroscope/drugbank/drugbank.tsv', 'a') as file:
-                        file.write('%s\t\t%s\t%s\t\t%s\t%s\t%s\t\t%s\t%s\n' % (name, atc, cas, pcid, psid, chebi, kegg, target_line))
+                        file.write('%s\t\t%s\t%s\t\t%s\t%s\t%s\t\t%s\t%s\n' %
+                                   (name, atc, cas, pcid, psid, chebi, kegg, target_line))
