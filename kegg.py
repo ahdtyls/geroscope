@@ -132,7 +132,7 @@ for drug in kegg_keys:
                                  (target_action, target_genes['gene_symbol'], target_name,
                                   target_genes['ensg'], target_genes['uniprot']))
             for target_rec in target_na:
-                with open('/home/maximk/Work/geroscope/kegg/kegg.csv', 'a') as kegg_file:
+                with open('/home/maximk/Work/geroscope/kegg/kegg.tsv', 'a') as kegg_file:
                     kegg_file.write('%s\t%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s' %
                                     (name, alias, atc, cas, pubchem_id, drug, target_rec))
 
