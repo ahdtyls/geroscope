@@ -28,6 +28,8 @@ for drug in drugs:
 
         if drug_field.tag == '{http://drugbank.ca}mechanism-of-action':
             mechanism = drug_field.text
+            if mechanism:
+                mechanism = mechanism.replace('\r\n', ' ')
 
         if drug_field.tag == '{http://drugbank.ca}atc-codes':
             for atc_rec in drug_field:
