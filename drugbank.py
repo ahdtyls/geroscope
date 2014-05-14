@@ -17,7 +17,7 @@ def parse_pmids(pmid_line):
 
 for drug in drugs:
     targets = []
-    name, cas, atc, mechanism = '', '', '', ''
+    name, cas, atc, mechanism, = '', '', '', ''
     ex_id_dict = dict()
     for drug_field in drug:
         if drug_field.tag == '{http://drugbank.ca}name':
@@ -50,12 +50,15 @@ for drug in drugs:
         target_lines = []
 
         if drug_field.tag == '{http://drugbank.ca}targets':
-            organism = ''
+            organism, ph_action = '', ''
             for target in drug_field:
                 action, pmids, gene_name, target_name, uniprot = '', '', '', '', ''
                 for target_field in target:
                     if target_field.tag == '{http://drugbank.ca}name':
                         target_name = target_field.text
+
+                    if target_field.tag == '{http://drugbank.ca}known-action':
+                        ph_action = target_field.text
 
                     if target_field.tag == '{http://drugbank.ca}organism':
                         organism = target_field.text
@@ -83,7 +86,7 @@ for drug in drugs:
                                     uniprot = ', '.join(uniprot)
                 target_lines.append('%s\t%s\t\t%s\t\t%s\t%s\t\t\t%s\t' %
                                     (action, mechanism, pmids, gene_name, target_name, uniprot))
-            if organism == 'Human':
+            if (organism == 'Human')and(ph_action == 'yes'):
                 for target_line in target_lines:
                     with open('/home/maximk/Work/geroscope/drugbank/drugbank.tsv', 'a') as file:
                         file.write('%s\t\t%s\t%s\t\t%s\t%s\t%s\t\t%s\t%s\n' %
