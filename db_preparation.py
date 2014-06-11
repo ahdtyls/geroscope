@@ -28,3 +28,7 @@ for filename in sorted(filenames):
                 drug.write('%sD%s\t%s\t\n' % (prefix, num, '\t'.join(line_split[0:10])))
                 action.write('%sA%s\t%sD%s\t%sT%s\t%s\t%s\n' % (prefix, num, prefix, num, prefix, num, '\t'.join(line_split[10:15]), prefix))
                 target.write(('%sT%s\t%s' % (prefix, num, '\t'.join(line_split[15:]))).replace('\n','\t\n'))
+
+# LOAD DATA LOCAL INFILE '/home/maximk/Work/geroscope/dtdb/drug.tsv' INTO TABLE drug FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+# LOAD DATA LOCAL INFILE '/home/maximk/Work/geroscope/dtdb/target.tsv' INTO TABLE target FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+# LOAD DATA LOCAL INFILE '/home/maximk/Work/geroscope/dtdb/action.tsv' INTO TABLE action FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
