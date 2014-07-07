@@ -82,6 +82,7 @@ def retrieve_record(gero_dict):
     """
     Возвращает выбранные параметры для всех записией по данному запросу
     """
+    geo_dir = '/home/maximk/Work/geroscope/geo/7.07/'
     gero_dict_copy = deepcopy(gero_dict)
     for drug in gero_dict.keys():
         for alias in gero_dict[drug].keys():
@@ -95,17 +96,24 @@ def retrieve_record(gero_dict):
                             print('%s;%s;%s;%s;%s;%s;GPL%s;%s' %
                                   (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                    summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
-                            with open('/home/maximk/Work/geroscope/geo/retry_process.txt', 'a') as file:
+                            with open(geo_dir + 'retry_process.txt', 'a') as file:
                                 file.write('%s;%s;%s;%s;%s;%s;GPL%s;%s\n' %
                                            (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                             summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
                             if (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                                 gero_dict_copy[drug][alias].remove(geo_id)
-                                with open('/home/maximk/Work/geroscope/geo/retry_unprocess.pickle', 'wb') as f:
+                                with open(geo_dir + 'retry_unprocess.pickle', 'wb') as f:
                                     pickle.dump(gero_dict_copy, f)
                     elif (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                         gero_dict_copy[drug][alias].remove(geo_id)
-                        with open('/home/maximk/Work/geroscope/geo/retry_unprocess.pickle', 'wb') as f:
+                        with open(geo_dir + 'retry_unprocess.pickle', 'wb') as f:
                             pickle.dump(gero_dict_copy, f)
     return None
 
+
+def main():
+    return None
+
+
+if __name__ == '__main__':
+    main()

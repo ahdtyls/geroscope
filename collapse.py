@@ -4,8 +4,7 @@ __author__ = 'maximk'
 from lxml import etree
 
 
-def drug_completeion(drug_name):
-
+def drug_completeion(drugs):
 
     for drug in drugs:
         targets = []
@@ -80,6 +79,10 @@ def main():
     drug = open('/home/maximk/Work/geroscope/dtdb/drug.tsv', 'r')
     action = open('/home/maximk/Work/geroscope/dtdb/action.tsv', 'r')
     target = open('/home/maximk/Work/geroscope/dtdb/target.tsv', 'r')
+
+    drugbank = etree.parse('/home/maximk/Work/geroscope/drugbank/drugbank.xml')
+    drugs = drugbank.getroot()
+
     return None
 
 if __name__ == 'main':
