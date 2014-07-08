@@ -70,27 +70,27 @@ def set_id_list(geroprot):
 def main():
     if len(sys.argv) == 1:
         argv = None
-        path = '/home/maximk/Work/geroscope/geo/8.07/'
+        path = '/home/maximk/Work/geroscope/geo/8.07/drugs.txt'
     else:
         argv = sys.argv[1:]
         path = argv[0]
 
-    drugs = path + 'drugs.txt'
+    path, drugs = os.path.split(path)
+    d_mod = drugs.split(sep='.')[0]
+    geroprot = open(os.path.join(path, drugs), 'r').read().split(sep='\n')
 
-    geroprot = open(drugs, 'r').read().split(sep='\n')
-
-    if os.path.isfile(path + 'retry_unprocess.pickle'):
-        with open(path + 'retry_unprocess.pickle', 'rb') as f:
+    if os.path.isfile(os.path.join(path, 'retry_unprocess_%s.pickle' % d_mod)):
+        with open(os.path.join(path, 'retry_unprocess_%s.pickle' % d_mod, 'rb')) as f:
             gero_dict = pickle.load(f)
-    elif os.path.isfile(path + 'retry.pickle'):
-        with open(path + 'retry.pickle', 'rb') as f:
+    elif os.path.isfile(os.path.join(path, 'retry_%s.pickle' % d_mod)):
+        with open(os.path.join(path, 'retry_%s.pickle' % d_mod), 'rb') as f:
             gero_dict = pickle.load(f)
     else:
         gero_dict = set_id_list(makedic(geroprot))
-        with open(path + 'retry.pickle', 'wb') as f:
+        with open(os.path.join(path, 'retry_%s.pickle' % d_mod), 'wb') as f:
             pickle.dump(gero_dict, f)
 
-    retrieve_record(gero_dict, path)
+    retrieve_record(gero_dict, os.path.join(path, drugs))
     return None
 
 if __name__=='__main__':

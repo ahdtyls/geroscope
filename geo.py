@@ -3,6 +3,7 @@ __author__ = 'maximk'
 import pickle
 import ftplib
 import urllib
+import os
 
 from Bio import Entrez
 from copy import deepcopy
@@ -82,6 +83,8 @@ def retrieve_record(gero_dict, path):
     """
     Возвращает выбранные параметры для всех записией по данному запросу
     """
+    path, drugs = os.path.split(path)
+    d_mod = drugs.split(sep='.')[0]
     geo_dir = path
     gero_dict_copy = deepcopy(gero_dict)
     for drug in gero_dict.keys():
@@ -96,17 +99,17 @@ def retrieve_record(gero_dict, path):
                             print('%s;%s;%s;%s;%s;%s;GPL%s;%s' %
                                   (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                    summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
-                            with open(geo_dir + 'retry_process.txt', 'a') as file:
+                            with open(os.path.join(geo_dir, 'retry_process_%s.txt' % d_mod, 'a')) as file:
                                 file.write('%s;%s;%s;%s;%s;%s;GPL%s;%s\n' %
                                            (drug, alias, summary[0]['Accession'], summary[0]['title'],
                                             summary[0]['n_samples'], cel_presence, c, ','.join(platform(c))))
                             if (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                                 gero_dict_copy[drug][alias].remove(geo_id)
-                                with open(geo_dir + 'retry_unprocess.pickle', 'wb') as f:
+                                with open(os.path.join(geo_dir, 'retry_unprocess_%s.pickle' % d_mod, 'wb')) as f:
                                     pickle.dump(gero_dict_copy, f)
                     elif (gero_dict_copy[drug][alias]) and (geo_id in gero_dict_copy[drug][alias]):
                         gero_dict_copy[drug][alias].remove(geo_id)
-                        with open(geo_dir + 'retry_unprocess.pickle', 'wb') as f:
+                        with open(os.path.join(geo_dir, 'retry_unprocess_%s.pickle' % d_mod, 'wb')) as f:
                             pickle.dump(gero_dict_copy, f)
     return None
 
