@@ -2,9 +2,10 @@ __author__ = 'maximk'
 
 import pickle
 import os.path
+import sys
+
 from copy import deepcopy
 from Bio import Entrez
-
 from geo import retrieve_record
 
 
@@ -67,7 +68,13 @@ def set_id_list(geroprot):
     return geroprot_copy
 
 def main():
-    path = '/home/maximk/Work/geroscope/geo/7.07/'
+    if len(sys.argv) == 1:
+        argv = None
+        path = '/home/maximk/Work/geroscope/geo/8.07/'
+    else:
+        argv = sys.argv[1:]
+        path = argv[0]
+
     drugs = path + 'drugs.txt'
 
     geroprot = open(drugs, 'r').read().split(sep='\n')
@@ -83,7 +90,7 @@ def main():
         with open(path + 'retry.pickle', 'wb') as f:
             pickle.dump(gero_dict, f)
 
-    retrieve_record(gero_dict)
+    retrieve_record(gero_dict, path)
     return None
 
 if __name__=='__main__':

@@ -26,7 +26,7 @@ def cel(ftp_address):
         if 'filelist.txt' in files_list:
             ftp.retrbinary('RETR filelist.txt', open('filelist.txt', 'wb').write)
 
-        filelist = open('/home/maximk/PycharmProjects/geroscope/filelist.txt', 'r').read()
+        filelist = open('filelist.txt', 'r').read()
         for line in filelist.split(sep='\n'):
             if 'CEL' in line:
                 cel_pres = '+'
@@ -78,11 +78,11 @@ def check_presence(drug_name, summary):
     return check_design(drug_names, summary[0]['GSE'])
 
 
-def retrieve_record(gero_dict):
+def retrieve_record(gero_dict, path):
     """
     Возвращает выбранные параметры для всех записией по данному запросу
     """
-    geo_dir = '/home/maximk/Work/geroscope/geo/7.07/'
+    geo_dir = path
     gero_dict_copy = deepcopy(gero_dict)
     for drug in gero_dict.keys():
         for alias in gero_dict[drug].keys():
